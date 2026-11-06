@@ -1,153 +1,134 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="uz">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>MS Tayyorlov</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="regions.js"></script>
 <style>
 :root{
-  --bg:var(--tg-theme-bg-color,#ffffff);
-  --text:var(--tg-theme-text-color,#14213d);
-  --hint:var(--tg-theme-hint-color,#6b7280);
-  --card:var(--tg-theme-secondary-bg-color,#f1f3f7);
-  --ink:var(--tg-theme-button-color,#1f3a8a);
-  --onink:var(--tg-theme-button-text-color,#ffffff);
-  --line:color-mix(in srgb,var(--text) 18%,transparent);
-  --ok:#1f9d55;--bad:#d64545;--pencil:#f2c14e;
+  --bg:#0b1020; --card:#131a30; --line:#243050; --text:#eef1ff; --muted:#8d97b8;
+  --violet:#7c5cff; --mint:#2ee6a6; --danger:#ff6b81;
 }
-*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
-html,body{background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-#app{max-width:560px;margin:0 auto;padding:20px 16px calc(24px + env(safe-area-inset-bottom,0px));min-height:100vh}
-h1{font-size:26px;line-height:1.15;letter-spacing:-.01em}
-h1 mark{background:linear-gradient(transparent 58%,var(--pencil) 58%);color:inherit;padding:0 2px}
-.sub{color:var(--hint);margin:6px 0 22px}
-.fan{display:flex;justify-content:space-between;align-items:center;width:100%;padding:16px;margin-bottom:10px;border:0;border-radius:14px;background:var(--card);color:inherit;font:inherit;text-align:left}
-.fan b{font-size:17px;display:block}
-.fan span{color:var(--hint);font-size:14px}
-.fan i{font-style:normal;font-size:22px;color:var(--ink)}
-.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:14px;color:var(--hint)}
-.timer{font-variant-numeric:tabular-nums;font-weight:600;color:var(--text)}
-.timer.low{color:var(--bad)}
-.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-bottom:22px}
-.bar div{height:100%;background:var(--ink);transition:width .25s}
-.q{font-size:20px;line-height:1.35;margin-bottom:18px}
-.opt{display:flex;gap:12px;align-items:center;width:100%;padding:12px;margin-bottom:10px;border:2px solid var(--line);border-radius:14px;background:transparent;color:inherit;font:inherit;text-align:left}
-.bub{flex:none;width:30px;height:30px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-weight:600;font-size:14px}
-.opt.sel{border-color:var(--ink)}
-.opt.sel .bub{background:var(--ink);color:var(--onink)}
-.nav{display:flex;gap:10px;margin-top:20px}
-.btn{flex:1;padding:14px;border:0;border-radius:12px;background:var(--ink);color:var(--onink);font:inherit;font-weight:600}
-.btn.alt{background:var(--card);color:var(--text)}
-.btn:disabled{opacity:.4}
-.score{text-align:center;padding:12px 0 22px}
-.score .n{font-size:56px;font-weight:700;letter-spacing:-.02em}
-.score .p{color:var(--hint)}
-.rev{padding:12px 0;border-top:1px solid var(--line);font-size:15px}
-.rev small{display:block;margin-top:4px}
-.ok{color:var(--ok)}.bad{color:var(--bad)}
-@media (prefers-reduced-motion:reduce){.bar div{transition:none}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:radial-gradient(900px 500px at 80% -10%,#2a1f6b55,transparent),var(--bg);
+  color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+.wrap{max-width:520px;margin:0 auto;padding:20px 16px 40px}
+.brand{display:flex;align-items:center;gap:12px;margin:8px 0 22px}
+.logo{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-weight:800;
+  background:linear-gradient(135deg,var(--violet),var(--mint));color:#0b1020;font-size:18px}
+.brand h1{margin:0;font-size:22px}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px}
+.card h2{margin:0 0 4px;font-size:18px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 16px}
+label{display:block;font-size:12px;color:var(--muted);margin:12px 0 6px}
+input,select{width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);
+  background:#0e1428;color:var(--text);font-size:16px;outline:none}
+input:focus,select:focus{border-color:var(--violet)}
+select:disabled{opacity:.5}
+button{width:100%;margin-top:20px;padding:15px;border:0;border-radius:14px;font-size:16px;
+  font-weight:700;color:#0b1020;background:linear-gradient(135deg,var(--violet),var(--mint));cursor:pointer}
+button:disabled{opacity:.6}
+.err{color:var(--danger);font-size:13px;margin-top:12px;min-height:16px}
+.hidden{display:none}
+.hello{font-size:20px;font-weight:700;margin:0 0 6px}
 </style>
 </head>
 <body>
-<div id="app"></div>
+<div class="wrap">
+  <div class="brand">
+    <div class="logo">MS</div>
+    <div><h1>MS Tayyorlov</h1><p>Milliy sertifikat testlariga tayyorgarlik</p></div>
+  </div>
+
+  <div id="loading" class="card"><p class="sub" style="margin:0">Yuklanmoqda...</p></div>
+
+  <form id="reg" class="card hidden">
+    <h2>Ro'yxatdan o'tish</h2>
+    <p class="sub">Ma'lumotlaringizni kiriting</p>
+    <label>Ism *</label><input id="first" autocomplete="given-name">
+    <label>Familiya *</label><input id="last" autocomplete="family-name">
+    <label>Sharifi</label><input id="middle">
+    <label>Telefon raqam</label><input id="phone" type="tel" placeholder="+998 90 123 45 67">
+    <label>Viloyat *</label><select id="region"><option value="">Viloyatni tanlang</option></select>
+    <label>Tuman *</label><select id="district" disabled><option value="">Avval viloyatni tanlang</option></select>
+    <div class="err" id="err"></div>
+    <button id="btn" type="submit">Ro'yxatdan o'tish</button>
+  </form>
+
+  <div id="home" class="card hidden">
+    <p class="hello" id="hello"></p>
+    <p class="sub" style="margin:0">Siz muvaffaqiyatli ro'yxatdan o'tdingiz. Testlar bo'limi keyingi bosqichda qo'shiladi.</p>
+  </div>
+</div>
+
 <script>
-const tg = window.Telegram && Telegram.WebApp;
-if (tg) { tg.ready(); tg.expand(); }
+const API = "https://ms-bot-server.onrender.com"; // Render havolangiz bilan almashtiring
+const tg = window.Telegram.WebApp;
+tg.ready(); tg.expand();
+const $ = id => document.getElementById(id);
 
-// Savollarni shu yerda oʻzgartiring: q = savol, o = variantlar, a = toʻgʻri javob indeksi (0 = A)
-const TESTLAR = {
-  "Matematika": [
-    {q:"2x + 6 = 14 boʻlsa, x nechaga teng?", o:["2","4","6","8"], a:1},
-    {q:"200 ning 15 foizi nechaga teng?", o:["20","30","40","45"], a:1},
-    {q:"Tomoni 5 sm boʻlgan kvadratning perimetri qancha?", o:["10 sm","15 sm","20 sm","25 sm"], a:2},
-    {q:"√144 nechaga teng?", o:["10","11","12","14"], a:2}
-  ],
-  "Ona tili": [
-    {q:"Qaysi soʻz ot turkumiga kiradi?", o:["yugurmoq","kitob","chiroyli","tez"], a:1},
-    {q:"“Bola” soʻzining koʻplik shakli qaysi?", o:["bolalar","bolaning","bolaga","bolacha"], a:0},
-    {q:"“Katta” soʻziga zid maʼnoli soʻzni toping.", o:["kichik","uzun","baland","keng"], a:0}
-  ],
-  "Ingliz tili": [
-    {q:"She ___ to school every day.", o:["go","goes","going","gone"], a:1},
-    {q:"Choose the opposite of “hot”.", o:["cold","warm","big","slow"], a:0},
-    {q:"What is the past form of “write”?", o:["writed","wrote","written","writes"], a:1}
-  ]
-};
-const VAQT = 10 * 60; // soniyada
-const L = "ABCD";
-const app = document.getElementById("app");
-let S = null, tick = null;
-
-const esc = s => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
-const mmss = t => String(Math.floor(t/60)).padStart(2,"0") + ":" + String(t%60).padStart(2,"0");
-
-function home(){
-  clearInterval(tick); S = null;
-  app.innerHTML = `
-    <h1><mark>MS Tayyorlov</mark></h1>
-    <p class="sub">Milliy sertifikatga tayyorgarlik. Fanni tanlang va testni boshlang.</p>
-    ${Object.keys(TESTLAR).map(f => `
-      <button class="fan" data-fan="${esc(f)}">
-        <div><b>${esc(f)}</b><span>${TESTLAR[f].length} ta savol, ${VAQT/60} daqiqa</span></div><i>›</i>
-      </button>`).join("")}`;
+async function call(path, body){
+  const r = await fetch(API + path, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({initData: tg.initData, ...body})
+  });
+  if(!r.ok) throw new Error("server " + r.status);
+  return r.json();
 }
 
-function start(fan){
-  S = {fan, i:0, ans:Array(TESTLAR[fan].length).fill(null), left:VAQT};
-  clearInterval(tick);
-  tick = setInterval(() => {
-    S.left--;
-    const el = document.getElementById("t");
-    if (el) { el.textContent = mmss(S.left); el.classList.toggle("low", S.left <= 60); }
-    if (S.left <= 0) finish();
-  }, 1000);
-  question();
+function fillRegions(){
+  Object.keys(REGIONS).forEach(n => {
+    const o = document.createElement("option"); o.value = o.textContent = n;
+    $("region").appendChild(o);
+  });
 }
-
-function question(){
-  const qs = TESTLAR[S.fan], q = qs[S.i], last = S.i === qs.length - 1;
-  app.innerHTML = `
-    <div class="top"><span>${esc(S.fan)}: ${S.i+1}/${qs.length}</span><span class="timer ${S.left<=60?"low":""}" id="t">${mmss(S.left)}</span></div>
-    <div class="bar"><div style="width:${(S.i/qs.length)*100}%"></div></div>
-    <p class="q">${esc(q.q)}</p>
-    ${q.o.map((o,j) => `
-      <button class="opt ${S.ans[S.i]===j?"sel":""}" data-opt="${j}"><span class="bub">${L[j]}</span><span>${esc(o)}</span></button>`).join("")}
-    <div class="nav">
-      <button class="btn alt" data-go="prev" ${S.i===0?"disabled":""}>Orqaga</button>
-      <button class="btn" data-go="${last?"end":"next"}">${last?"Yakunlash":"Keyingisi"}</button>
-    </div>`;
-}
-
-function finish(){
-  clearInterval(tick);
-  const qs = TESTLAR[S.fan];
-  const ball = qs.reduce((n,q,i) => n + (S.ans[i]===q.a ? 1 : 0), 0);
-  const foiz = Math.round(ball / qs.length * 100);
-  app.innerHTML = `
-    <div class="score"><div class="n">${ball}/${qs.length}</div><div class="p">${foiz}% toʻgʻri, ${esc(S.fan)}</div></div>
-    ${qs.map((q,i) => {
-      const ok = S.ans[i]===q.a;
-      return `<div class="rev"><b>${i+1}. ${esc(q.q)}</b>
-        <small class="${ok?"ok":"bad"}">Sizning javobingiz: ${S.ans[i]===null?"belgilanmagan":L[S.ans[i]]+") "+esc(q.o[S.ans[i]])}</small>
-        ${ok?"":`<small class="ok">Toʻgʻri javob: ${L[q.a]}) ${esc(q.o[q.a])}</small>`}</div>`;
-    }).join("")}
-    <div class="nav"><button class="btn alt" data-go="again">Qayta ishlash</button><button class="btn" data-go="home">Fanlar</button></div>`;
-}
-
-app.addEventListener("click", e => {
-  const b = e.target.closest("button"); if (!b) return;
-  if (b.dataset.fan) return start(b.dataset.fan);
-  if (b.dataset.opt !== undefined) { S.ans[S.i] = +b.dataset.opt; if (tg) tg.HapticFeedback.selectionChanged(); return question(); }
-  const g = b.dataset.go;
-  if (g === "next") { S.i++; question(); }
-  else if (g === "prev") { S.i--; question(); }
-  else if (g === "end") finish();
-  else if (g === "again") start(S.fan);
-  else if (g === "home") home();
+$("region").addEventListener("change", e => {
+  const d = $("district");
+  d.innerHTML = '<option value="">Tumanni tanlang</option>';
+  const list = REGIONS[e.target.value] || [];
+  list.forEach(n => { const o = document.createElement("option"); o.value = o.textContent = n; d.appendChild(o); });
+  d.disabled = !list.length;
 });
 
-home();
+function show(id){
+  ["loading","reg","home"].forEach(x => $(x).classList.toggle("hidden", x !== id));
+}
+
+$("reg").addEventListener("submit", async e => {
+  e.preventDefault();
+  $("err").textContent = "";
+  const first = $("first").value.trim(), last = $("last").value.trim();
+  if(!first || !last || !$("region").value || !$("district").value){
+    $("err").textContent = "Yulduzcha (*) bilan belgilangan maydonlarni to'ldiring"; return;
+  }
+  $("btn").disabled = true;
+  try{
+    await call("/api/register", {
+      first_name: first, last_name: last,
+      middle_name: $("middle").value.trim() || null,
+      phone: $("phone").value.trim() || null,
+      region: $("region").value, district: $("district").value
+    });
+    $("hello").textContent = "Xush kelibsiz, " + first + "!";
+    show("home");
+  }catch(err){
+    $("err").textContent = "Xatolik. Qayta urinib ko'ring (server uyg'onayotgan bo'lishi mumkin).";
+  }
+  $("btn").disabled = false;
+});
+
+(async () => {
+  fillRegions();
+  try{
+    const res = await call("/api/me", {});
+    if(res.user){ $("hello").textContent = "Xush kelibsiz, " + res.user.first_name + "!"; show("home"); }
+    else show("reg");
+  }catch(e){ show("reg"); }
+})();
 </script>
 </body>
 </html>
