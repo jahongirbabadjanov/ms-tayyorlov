@@ -7,25 +7,26 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="regions.js"></script>
 <style>
-:root{--bg:#0b1020;--card:#131a30;--line:#243050;--text:#eef1ff;--muted:#8d97b8;--violet:#7c5cff;--mint:#2ee6a6;--danger:#ff6b81}
+:root{--bg:#0b1020;--card:#131a30;--card2:#1f2a55;--line:#243050;--line2:#3a4a86;--text:#eef1ff;--muted:#8d97b8;--violet:#7c5cff;--mint:#2ee6a6;--danger:#ff6b81;--soft:#2b3770}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;background:radial-gradient(900px 500px at 80% -10%,#2a1f6b55,transparent),var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
-.wrap{max-width:520px;margin:0 auto;padding:16px 16px 100px}
+.wrap{max-width:520px;margin:0 auto;padding:14px 16px 100px}
 .brand{display:flex;align-items:center;gap:12px;margin:6px 0 18px}
 .logo{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-weight:800;background:linear-gradient(135deg,var(--violet),var(--mint));color:#0b1020}
 .brand h1{margin:0;font-size:20px}.brand p{margin:2px 0 0;color:var(--muted);font-size:12px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;margin-bottom:12px}
-.card h2{margin:0 0 4px;font-size:18px}
-.sub{color:var(--muted);font-size:13px;margin:0 0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;margin-bottom:12px}
+.card h2{margin:0 0 4px;font-size:19px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 12px;line-height:1.4}
 label{display:block;font-size:12px;color:var(--muted);margin:12px 0 6px}
 input,select,textarea{width:100%;padding:13px;border-radius:14px;border:1px solid var(--line);background:#0e1428;color:var(--text);font-size:16px;outline:none;font-family:inherit}
 input:focus,select:focus,textarea:focus{border-color:var(--violet)}
 select:disabled{opacity:.5}
-.btn{width:100%;margin-top:16px;padding:14px;border:0;border-radius:14px;font-size:16px;font-weight:700;color:#0b1020;background:linear-gradient(135deg,var(--violet),var(--mint));cursor:pointer}
+.btn{width:100%;margin-top:16px;padding:14px;border:0;border-radius:16px;font-size:16px;font-weight:700;color:#0b1020;background:linear-gradient(135deg,var(--violet),var(--mint));cursor:pointer}
 .btn.sec{background:#1b2547;color:var(--text);margin-top:10px}
+.btn.yel{margin-top:12px}
 .btn:disabled{opacity:.6}
 .err{color:var(--danger);font-size:13px;margin-top:10px;min-height:16px}
-.hidden{display:none}
+.hidden{display:none!important}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .sec-t{margin:18px 0 6px;font-weight:700;font-size:14px;color:var(--mint)}
 .qrow{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #1a2342}
@@ -43,16 +44,50 @@ select:disabled{opacity:.5}
 .note{padding:12px;border:1px dashed var(--line);border-radius:14px;color:var(--muted);font-size:13px;margin-top:10px}
 .chk{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:14px}
 .chk input{width:22px;height:22px;padding:0}
-.t{padding:14px;border:1px solid var(--line);border-radius:16px;margin-bottom:10px;background:#0f1630}
-.t b{font-size:16px}.t small{color:var(--muted);display:block;margin-top:4px}
-.pill{display:inline-block;padding:3px 10px;border-radius:99px;background:#1b2547;color:var(--mint);font-size:12px;margin-top:8px;margin-right:6px}
 .code{font-size:40px;font-weight:800;letter-spacing:6px;text-align:center;color:var(--mint);margin:10px 0}
 .kv{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #1a2342;font-size:14px}
 .kv span:first-child{color:var(--muted)}
+.hello{display:flex;align-items:center;gap:12px;margin:2px 0 14px}
+.av{flex:none;width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:19px;color:#0b1020;background:linear-gradient(135deg,var(--violet),var(--mint));border:3px solid var(--bg);box-shadow:0 0 0 2px var(--violet)}
+.hello small{color:var(--muted);font-size:14px;display:block}
+.hello b{font-size:21px;line-height:1.15}
+.hello>div:not(.av){flex:1;min-width:0}
+.badge{padding:7px 14px;border-radius:12px;background:linear-gradient(135deg,var(--violet),var(--mint));color:#0b1020;font-weight:800;font-size:13px}
+.hero{border-radius:26px;padding:20px;margin-bottom:14px;background:linear-gradient(135deg,#34408a,#4a3a9a);border:1px solid var(--line2)}
+.hero small{color:#c3cbf0;font-size:14px}
+.hero h2{margin:6px 0 14px;font-size:27px;line-height:1.15;color:#fff}
+.bar{height:10px;border-radius:9px;background:#ffffff26;overflow:hidden;margin-bottom:10px}
+.bar i{display:block;height:100%;width:6%;border-radius:9px;background:linear-gradient(90deg,var(--mint),var(--violet))}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 16px 10px;margin:0 -16px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:11px 16px;border-radius:99px;border:1.5px solid var(--line2);background:var(--card2);color:var(--text);font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
+.chip.on{background:var(--violet);border-color:var(--violet);color:#fff}
+.chip em{font-style:normal;font-size:12px;min-width:22px;height:22px;border-radius:99px;display:grid;place-items:center;background:var(--soft);color:#d6dcff}
+.cats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:6px 0 14px}
+.cat{border:1.5px solid var(--line2);background:var(--card2);border-radius:20px;padding:14px 6px;font-size:14px;font-weight:700;color:var(--text);display:flex;flex-direction:column;align-items:center;gap:8px;min-height:104px;justify-content:center;line-height:1.2}
+.cat i{font-style:normal;font-size:26px;width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:var(--soft)}
+.cat.on{border-color:var(--mint);background:#26407a}
+.cat.on i{background:#2e5a8f}
+.codebar{display:flex;align-items:center;gap:8px;background:var(--card2);border:1.5px solid var(--line2);border-radius:22px;padding:6px 6px 6px 14px;margin-bottom:14px}
+.codebar span{font-size:20px}
+.codebar input{border:0;padding:10px 4px;background:none;flex:1;min-width:0}
+.codebar button{border:0;background:linear-gradient(135deg,var(--violet),var(--mint));color:#0b1020;font-weight:800;font-size:15px;padding:13px 20px;border-radius:16px}
+.t{cursor:pointer;background:var(--card2);border:1.5px solid var(--line2);border-radius:24px;padding:16px;margin-bottom:12px}
+.th{display:flex;align-items:center;gap:14px}
+.ti{width:60px;height:60px;flex:none;border-radius:18px;display:grid;place-items:center;font-size:28px;color:#fff;background:linear-gradient(135deg,var(--violet),#5a8cff)}
+.tm{flex:1;min-width:0}
+.tm b{display:block;font-size:19px;line-height:1.2;color:var(--text)}
+.tm small{display:block;margin-top:5px;color:#aeb8e0;font-size:14px}
+.tag{flex:none;align-self:flex-start;padding:7px 12px;border-radius:12px;background:var(--soft);color:var(--mint);font-weight:700;font-size:14px}
+.tag.paid{background:#4a3f6e;color:#ffd36e}
+.empty{border:1.5px dashed var(--line2);border-radius:24px;padding:34px 18px;text-align:center;color:var(--muted);background:#1f2a5566}
+.empty div{font-size:46px;margin-bottom:8px}
+.empty b{display:block;color:var(--text);font-size:19px;margin-bottom:6px}
 nav{position:fixed;left:0;right:0;bottom:0;display:flex;gap:4px;padding:8px 10px 14px;background:#0d1328ee;backdrop-filter:blur(10px);border-top:1px solid var(--line)}
-nav button{flex:1;border:0;background:none;color:var(--muted);padding:8px 2px;border-radius:12px;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px}
-nav button i{font-style:normal;font-size:20px}
-nav button.on{background:#1b2547;color:var(--text)}
+nav button{flex:1;border:0;background:none;color:var(--muted);padding:6px 2px;border-radius:12px;font-size:13px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px}
+nav button i{font-style:normal;font-size:26px;filter:grayscale(.8);opacity:.7}
+nav button.on{background:#1b2547;color:var(--text);font-weight:800}
+nav button.on i{filter:none;opacity:1}
 </style>
 </head>
 <body>
@@ -74,12 +109,23 @@ nav button.on{background:#1b2547;color:var(--text)}
   </form>
 
   <div id="app" class="hidden">
-    <section id="v-tests" class="hidden"><div id="tlist"></div></section>
+    <div class="hello"><div class="av" id="av">MS</div><div><small>Salom,</small><b id="hname"></b></div><span class="badge">MS</span></div>
 
-    <section id="v-answer" class="hidden">
-      <div class="card"><h2>Javob yuborish</h2><p class="sub">Test kodi bo'yicha javob yuborish keyingi bosqichda qo'shiladi.</p></div>
+    <section id="v-tests" class="hidden">
+      <div class="hero"><small>Xush kelibsiz!</small><h2 id="herot">Birinchi testingizni boshlang</h2><div class="bar"><i id="barfill"></i></div><small>Milliy sertifikat uchun sinov testlari</small></div>
+      <div class="chips" id="chips"></div>
+      <div class="cats" id="cats">
+        <button class="cat" data-c="past"><i>📚</i>Tushgan savollar</button>
+        <button class="cat on" data-c="ms"><i>📝</i>MS testlar</button>
+        <button class="cat" data-c="done"><i>✅</i>Ishlangan savollar</button>
+      </div>
+      <div class="codebar"><span>🔑</span><input id="codein" inputmode="numeric" placeholder="Test kodi bilan kirish"><button id="codego" type="button">Kirish</button></div>
+      <div id="tlist"></div>
     </section>
 
+    <section id="v-answer" class="hidden">
+      <div class="card"><h2>Mening natijalarim</h2><div class="empty" style="margin-top:12px"><div>📊</div><b>Hali natija yo'q</b>Test ishlang — natijalar shu yerda paydo bo'ladi.</div></div>
+    </section>
     <section id="v-create" class="hidden">
       <div class="card" id="cform">
         <h2>Test yaratish</h2><p class="sub">Milliy sertifikat testi</p>
@@ -131,14 +177,14 @@ nav button.on{background:#1b2547;color:var(--text)}
 </div>
 
 <nav id="nav" class="hidden">
-  <button data-v="tests"><i>📋</i>MS testlar</button>
-  <button data-v="answer"><i>✍️</i>Javob</button>
-  <button data-v="create"><i>➕</i>Test yaratish</button>
+  <button data-v="tests"><i>🏠</i>Asosiy</button>
+  <button data-v="answer"><i>📊</i>Natijalar</button>
+  <button data-v="create"><i>✍️</i>Yaratish</button>
   <button data-v="profile"><i>👤</i>Profil</button>
 </nav>
 
 <script>
-const API = "https://ms-bot-server.onrender.com"; // O'Z Render havolangiz
+const API = "https://ms-bot-server.onrender.com";
 const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
 const $ = id => document.getElementById(id);
 const SUBJECTS = ["Matematika","Fizika","Ona tili va adabiyot","Qoraqalpoq tili va adabiyot","Rus tili va adabiyot","Kimyo","Biologiya","Geografiya","Tarix","Ingliz tili"];
@@ -164,7 +210,7 @@ async function call(path, body){
 function esc(s){ const d = document.createElement("div"); d.textContent = s ?? ""; return d.innerHTML; }
 const som = n => n ? Number(n).toLocaleString("ru-RU") + " so'm" : "bepul";
 
-function showTop(id){ ["loading","reg","app"].forEach(x => $(x).classList.toggle("hidden", x !== id)); $("nav").classList.toggle("hidden", id !== "app"); }
+function showTop(id){ document.querySelector(".brand").classList.toggle("hidden", id === "app"); ["loading","reg","app"].forEach(x => $(x).classList.toggle("hidden", x !== id)); $("nav").classList.toggle("hidden", id !== "app"); }
 function go(v){
   ["tests","answer","create","profile"].forEach(x => $("v-"+x).classList.toggle("hidden", x !== v));
   document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.v === v));
@@ -194,16 +240,44 @@ $("reg").addEventListener("submit", async e => {
 });
 
 /* tests list */
+let TESTS = [], FILTER = "", CAT = "ms";
+const ICONS = {"Matematika":"∑","Fizika":"⚛️","Kimyo":"🧪","Biologiya":"🧬","Tarix":"🏛️","Geografiya":"🌍","Ingliz":"🔤","Ona tili":"📖","Qoraqalpoq":"📖","Rus":"📚"};
+const iconOf = s => { for(const k in ICONS) if((s||"").startsWith(k)) return ICONS[k]; return "📘"; };
+
+function renderChips(){
+  const cnt = {}; TESTS.forEach(t => cnt[t.subject] = (cnt[t.subject]||0) + 1);
+  const mk = (name, val, n) => `<button class="chip${FILTER === val ? " on" : ""}" data-s="${esc(val)}">${esc(name)}${n ? `<em>${n}</em>` : ""}</button>`;
+  $("chips").innerHTML = mk("Barchasi", "", TESTS.length) + SUBJECTS.map(n => mk(n, n, cnt[n])).join("");
+}
+function renderTests(){
+  const box = $("tlist");
+  if(CAT !== "ms"){
+    box.innerHTML = `<div class="empty"><div>${CAT === "past" ? "📭" : "🗂️"}</div><b>${CAT === "past" ? "Hozircha tushgan savollar yo'q" : "Hozircha ishlangan savollar yo'q"}</b>Tez orada shu yerda paydo bo'ladi.</div>`;
+    return;
+  }
+  const list = TESTS.filter(t => !FILTER || t.subject === FILTER);
+  if(!list.length){ box.innerHTML = `<div class="empty"><div>📭</div><b>Hozircha testlar yo'q</b>"Yaratish" bo'limidan test yarating.</div>`; return; }
+  box.innerHTML = list.map(t => `<div class="t" data-code="${esc(t.code)}">
+    <div class="th"><div class="ti">${iconOf(t.subject)}</div>
+      <div class="tm"><b>${esc(t.title)}</b><small>${esc(t.subject)} · ${t.question_count} savol · ⏳ ${t.duration_minutes} daq</small></div>
+      <span class="tag${t.price ? " paid" : ""}">${t.price ? som(t.price) : "Ochiq"}</span></div>
+    <button class="btn yel" type="button">Testni boshlash</button></div>`).join("");
+}
 async function loadTests(){
-  const box = $("tlist"); box.innerHTML = '<div class="card"><p class="sub" style="margin:0">Yuklanmoqda...</p></div>';
+  renderChips();
+  $("tlist").innerHTML = '<div class="card"><p class="sub" style="margin:0">Yuklanmoqda...</p></div>';
   try{
     const r = await call("/api/tests/list", {});
-    if(!r.tests.length){ box.innerHTML = '<div class="card"><p class="sub" style="margin:0">Hozircha testlar yo\'q. "Test yaratish" bo\'limidan yarating.</p></div>'; return; }
-    box.innerHTML = r.tests.map(t => `<div class="t" data-code="${esc(t.code)}"><b>${esc(t.title)}</b><small>${esc(t.subject)}</small>
-      <span class="pill">${t.question_count} ta savol</span><span class="pill">${t.duration_minutes} daqiqa</span><span class="pill">${som(t.price)}</span><span class="pill">kod: ${esc(t.code)}</span></div>`).join("");
-  }catch(e){ box.innerHTML = '<div class="card"><p class="sub" style="margin:0">Yuklab bo\'lmadi. Qayta urinib ko\'ring.</p></div>'; }
+    TESTS = r.tests;
+    $("herot").textContent = TESTS.length ? "Testni tanlang va boshlang" : "Birinchi testingizni boshlang";
+    renderChips(); renderTests();
+  }catch(e){ $("tlist").innerHTML = '<div class="empty"><div>⚠️</div><b>Yuklab bo\'lmadi</b>Server uyg\'onayotgan bo\'lishi mumkin. Birozdan so\'ng qayta urinib ko\'ring.</div>'; }
 }
-
+$("chips").addEventListener("click", e => { const b = e.target.closest(".chip"); if(!b) return; FILTER = b.dataset.s; renderChips(); renderTests(); });
+$("cats").addEventListener("click", e => {
+  const b = e.target.closest(".cat"); if(!b) return; CAT = b.dataset.c;
+  document.querySelectorAll(".cat").forEach(x => x.classList.toggle("on", x === b)); renderTests();
+});
 /* create test: sheet */
 SUBJECTS.forEach(n => { const o = document.createElement("option"); o.value = o.textContent = n; $("subject").appendChild(o); });
 
@@ -249,8 +323,8 @@ function renderOpen(){
 function renderExtra(){
   const nw = clamp(parseInt($("nwrit").value) || 0, 0, 5);
   const start = 36 + openAns.length;
-  $("writbox").innerHTML = nw ? `<div class="note">📝 ${start}${nw > 1 ? "-" + (start + nw - 1) : ""}-savol: yozma ish (${nw} ta)</div>` : "";
-  $("essaybox").innerHTML = $("essay").checked ? `<div class="note">✍️ Esse ball: o'quvchi testni ishlab bo'lgach o'zi kiritadi. Umumiy ball = (esse ball + test ball) / 2</div>` : "";
+  $("writbox").innerHTML = nw ? `<div class="note">📝 ${start}${nw > 1 ? "-" + (start + nw - 1) : ""}-savol: yozma ish (${nw} ta). O'quvchi yozma ish ballini (0-75) testdan keyin o'zi kiritadi.</div>` : "";
+  $("essaybox").innerHTML = $("essay").checked ? `<div class="note">✍️ Esse ball: o'quvchi testni ishlab bo'lgach o'zi kiritadi (0-75). Umumiy ball = (esse ball + test ball) / 2</div>` : "";
 }
 
 function syncCounts(){
@@ -314,7 +388,12 @@ function fillProfile(){
   $("pphone").textContent = ME.phone || "-"; $("preg").textContent = ME.region; $("pdist").textContent = ME.district;
 }
 
-function startApp(){ showTop("app"); renderClosed(); $("subject").onchange(); go("tests"); }
+function fillHello(){
+  const f = ME.first_name || "", l = ME.last_name || "";
+  $("hname").textContent = (f + " " + l).trim();
+  $("av").textContent = ((f[0]||"") + (l[0]||"")).toUpperCase() || "MS";
+}
+function startApp(){ fillHello(); showTop("app"); renderClosed(); $("subject").onchange(); go("tests"); }
 
 (async () => {
   try{
@@ -322,6 +401,7 @@ function startApp(){ showTop("app"); renderClosed(); $("subject").onchange(); go
     if(r.user){ ME = r.user; startApp(); } else showTop("reg");
   }catch(e){ showTop("reg"); }
 })();
-</script><script src="exam.js"></script>
+</script>
+<script src="exam.js"></script>
 </body>
-  </html>
+</html>
