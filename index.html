@@ -199,7 +199,7 @@ async function loadTests(){
   try{
     const r = await call("/api/tests/list", {});
     if(!r.tests.length){ box.innerHTML = '<div class="card"><p class="sub" style="margin:0">Hozircha testlar yo\'q. "Test yaratish" bo\'limidan yarating.</p></div>'; return; }
-    box.innerHTML = r.tests.map(t => `<div class="t"><b>${esc(t.title)}</b><small>${esc(t.subject)} · mashq testi</small>
+    box.innerHTML = r.tests.map(t => `<div class="t" data-code="${esc(t.code)}"><b>${esc(t.title)}</b><small>${esc(t.subject)}</small>
       <span class="pill">${t.question_count} ta savol</span><span class="pill">${t.duration_minutes} daqiqa</span><span class="pill">${som(t.price)}</span><span class="pill">kod: ${esc(t.code)}</span></div>`).join("");
   }catch(e){ box.innerHTML = '<div class="card"><p class="sub" style="margin:0">Yuklab bo\'lmadi. Qayta urinib ko\'ring.</p></div>'; }
 }
@@ -322,6 +322,6 @@ function startApp(){ showTop("app"); renderClosed(); $("subject").onchange(); go
     if(r.user){ ME = r.user; startApp(); } else showTop("reg");
   }catch(e){ showTop("reg"); }
 })();
-</script>
+</script><script src="exam.js"></script>
 </body>
   </html>
