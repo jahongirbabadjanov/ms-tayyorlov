@@ -7,128 +7,321 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="regions.js"></script>
 <style>
-:root{
-  --bg:#0b1020; --card:#131a30; --line:#243050; --text:#eef1ff; --muted:#8d97b8;
-  --violet:#7c5cff; --mint:#2ee6a6; --danger:#ff6b81;
-}
+:root{--bg:#0b1020;--card:#131a30;--line:#243050;--text:#eef1ff;--muted:#8d97b8;--violet:#7c5cff;--mint:#2ee6a6;--danger:#ff6b81}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;background:radial-gradient(900px 500px at 80% -10%,#2a1f6b55,transparent),var(--bg);
-  color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
-.wrap{max-width:520px;margin:0 auto;padding:20px 16px 40px}
-.brand{display:flex;align-items:center;gap:12px;margin:8px 0 22px}
-.logo{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-weight:800;
-  background:linear-gradient(135deg,var(--violet),var(--mint));color:#0b1020;font-size:18px}
-.brand h1{margin:0;font-size:22px}
-.brand p{margin:2px 0 0;color:var(--muted);font-size:13px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px}
+body{margin:0;background:radial-gradient(900px 500px at 80% -10%,#2a1f6b55,transparent),var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+.wrap{max-width:520px;margin:0 auto;padding:16px 16px 100px}
+.brand{display:flex;align-items:center;gap:12px;margin:6px 0 18px}
+.logo{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-weight:800;background:linear-gradient(135deg,var(--violet),var(--mint));color:#0b1020}
+.brand h1{margin:0;font-size:20px}.brand p{margin:2px 0 0;color:var(--muted);font-size:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;margin-bottom:12px}
 .card h2{margin:0 0 4px;font-size:18px}
-.sub{color:var(--muted);font-size:13px;margin:0 0 16px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 12px}
 label{display:block;font-size:12px;color:var(--muted);margin:12px 0 6px}
-input,select{width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);
-  background:#0e1428;color:var(--text);font-size:16px;outline:none}
-input:focus,select:focus{border-color:var(--violet)}
+input,select,textarea{width:100%;padding:13px;border-radius:14px;border:1px solid var(--line);background:#0e1428;color:var(--text);font-size:16px;outline:none;font-family:inherit}
+input:focus,select:focus,textarea:focus{border-color:var(--violet)}
 select:disabled{opacity:.5}
-button{width:100%;margin-top:20px;padding:15px;border:0;border-radius:14px;font-size:16px;
-  font-weight:700;color:#0b1020;background:linear-gradient(135deg,var(--violet),var(--mint));cursor:pointer}
-button:disabled{opacity:.6}
-.err{color:var(--danger);font-size:13px;margin-top:12px;min-height:16px}
+.btn{width:100%;margin-top:16px;padding:14px;border:0;border-radius:14px;font-size:16px;font-weight:700;color:#0b1020;background:linear-gradient(135deg,var(--violet),var(--mint));cursor:pointer}
+.btn.sec{background:#1b2547;color:var(--text);margin-top:10px}
+.btn:disabled{opacity:.6}
+.err{color:var(--danger);font-size:13px;margin-top:10px;min-height:16px}
 .hidden{display:none}
-.hello{font-size:20px;font-weight:700;margin:0 0 6px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sec-t{margin:18px 0 6px;font-weight:700;font-size:14px;color:var(--mint)}
+.qrow{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #1a2342}
+.qn{width:28px;color:var(--muted);font-size:13px}
+.opt{flex:1;max-width:52px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:#0e1428;color:#7da4ff;font-weight:700;font-size:15px}
+.opt.on{background:var(--violet);border-color:var(--violet);color:#fff}
+.cnt{color:var(--mint);font-size:13px;margin:8px 0}
+.ohead{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding:8px 10px;background:#0e1428;border-radius:12px}
+.ohead span{font-size:14px;color:var(--muted)}
+.ohead div{display:flex;gap:8px}
+.sm{width:38px;height:34px;border:0;border-radius:10px;font-size:20px;font-weight:700;color:#fff;background:#4a7bd0}
+.sm.minus{background:#e0645c}
+.orow{display:flex;align-items:center;gap:8px;margin-top:8px}
+.orow .qn{width:24px}
+.note{padding:12px;border:1px dashed var(--line);border-radius:14px;color:var(--muted);font-size:13px;margin-top:10px}
+.chk{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:14px}
+.chk input{width:22px;height:22px;padding:0}
+.t{padding:14px;border:1px solid var(--line);border-radius:16px;margin-bottom:10px;background:#0f1630}
+.t b{font-size:16px}.t small{color:var(--muted);display:block;margin-top:4px}
+.pill{display:inline-block;padding:3px 10px;border-radius:99px;background:#1b2547;color:var(--mint);font-size:12px;margin-top:8px;margin-right:6px}
+.code{font-size:40px;font-weight:800;letter-spacing:6px;text-align:center;color:var(--mint);margin:10px 0}
+.kv{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #1a2342;font-size:14px}
+.kv span:first-child{color:var(--muted)}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;gap:4px;padding:8px 10px 14px;background:#0d1328ee;backdrop-filter:blur(10px);border-top:1px solid var(--line)}
+nav button{flex:1;border:0;background:none;color:var(--muted);padding:8px 2px;border-radius:12px;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px}
+nav button i{font-style:normal;font-size:20px}
+nav button.on{background:#1b2547;color:var(--text)}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="brand">
-    <div class="logo">MS</div>
-    <div><h1>MS Tayyorlov</h1><p>Milliy sertifikat testlariga tayyorgarlik</p></div>
-  </div>
+  <div class="brand"><div class="logo">MS</div><div><h1>MS Tayyorlov</h1><p>Milliy sertifikat testlariga tayyorgarlik</p></div></div>
 
   <div id="loading" class="card"><p class="sub" style="margin:0">Yuklanmoqda...</p></div>
 
   <form id="reg" class="card hidden">
-    <h2>Ro'yxatdan o'tish</h2>
-    <p class="sub">Ma'lumotlaringizni kiriting</p>
-    <label>Ism *</label><input id="first" autocomplete="given-name">
-    <label>Familiya *</label><input id="last" autocomplete="family-name">
+    <h2>Ro'yxatdan o'tish</h2><p class="sub">Ma'lumotlaringizni kiriting</p>
+    <label>Ism *</label><input id="first">
+    <label>Familiya *</label><input id="last">
     <label>Sharifi</label><input id="middle">
     <label>Telefon raqam</label><input id="phone" type="tel" placeholder="+998 90 123 45 67">
     <label>Viloyat *</label><select id="region"><option value="">Viloyatni tanlang</option></select>
     <label>Tuman *</label><select id="district" disabled><option value="">Avval viloyatni tanlang</option></select>
-    <div class="err" id="err"></div>
-    <button id="btn" type="submit">Ro'yxatdan o'tish</button>
+    <div class="err" id="rerr"></div>
+    <button class="btn" id="rbtn" type="submit">Ro'yxatdan o'tish</button>
   </form>
 
-  <div id="home" class="card hidden">
-    <p class="hello" id="hello"></p>
-    <p class="sub" style="margin:0">Siz muvaffaqiyatli ro'yxatdan o'tdingiz. Testlar bo'limi keyingi bosqichda qo'shiladi.</p>
+  <div id="app" class="hidden">
+    <section id="v-tests" class="hidden"><div id="tlist"></div></section>
+
+    <section id="v-answer" class="hidden">
+      <div class="card"><h2>Javob yuborish</h2><p class="sub">Test kodi bo'yicha javob yuborish keyingi bosqichda qo'shiladi.</p></div>
+    </section>
+
+    <section id="v-create" class="hidden">
+      <div class="card" id="cform">
+        <h2>Test yaratish</h2><p class="sub">Milliy sertifikat testi</p>
+        <label>Fan</label><select id="subject"></select>
+        <label>Test nomi *</label><input id="title" placeholder="Masalan: MS TEST №1">
+        <div class="row2">
+          <div><label>Narxi (so'm, 0 = bepul)</label><input id="price" type="number" inputmode="numeric" value="0"></div>
+          <div><label>Vaqt (daqiqa)</label><input id="dur" type="number" inputmode="numeric" value="180"></div>
+        </div>
+        <div class="row2">
+          <div><label>Ochiq savollar soni (0-10)</label><input id="nopen" type="number" inputmode="numeric" value="10"></div>
+          <div><label>Yozma ishlar soni (0-5)</label><input id="nwrit" type="number" inputmode="numeric" value="0"></div>
+        </div>
+        <label class="chk"><input type="checkbox" id="essay"> Esse ball qo'shiladi (o'quvchi o'zi kiritadi)</label>
+
+        <div class="sec-t">⚡ Tez kiritish (yopiq savollar)</div>
+        <textarea id="qtext" rows="2" placeholder="1a2b3c4d... yoki faqat harflar: abcd..."></textarea>
+        <button class="btn sec" id="quick" type="button">Belgilash</button>
+
+        <div class="sec-t">Yopiq savollar (1-35)</div>
+        <div class="cnt" id="cnt"></div>
+        <div id="grid"></div>
+
+        <div class="sec-t" id="openT">Ochiq savollar</div>
+        <div id="openbox"></div>
+
+        <div id="writbox"></div>
+        <div id="essaybox"></div>
+
+        <div class="err" id="cerr"></div>
+        <button class="btn" id="make" type="button">Test yaratish</button>
+      </div>
+      <div class="card hidden" id="cdone">
+        <h2>Test yaratildi ✅</h2><p class="sub">Test kodi:</p>
+        <div class="code" id="newcode"></div>
+        <button class="btn" id="again" type="button">Yana test yaratish</button>
+      </div>
+    </section>
+
+    <section id="v-profile" class="hidden">
+      <div class="card"><h2 id="pname"></h2><p class="sub">Profil</p>
+        <div class="kv"><span>Balans</span><span id="pbal"></span></div>
+        <div class="kv"><span>Telefon</span><span id="pphone"></span></div>
+        <div class="kv"><span>Viloyat</span><span id="preg"></span></div>
+        <div class="kv"><span>Tuman</span><span id="pdist"></span></div>
+      </div>
+    </section>
   </div>
 </div>
 
+<nav id="nav" class="hidden">
+  <button data-v="tests"><i>📋</i>MS testlar</button>
+  <button data-v="answer"><i>✍️</i>Javob</button>
+  <button data-v="create"><i>➕</i>Test yaratish</button>
+  <button data-v="profile"><i>👤</i>Profil</button>
+</nav>
+
 <script>
-const API = "https://ms-bot-server.onrender.com"; // Render havolangiz bilan almashtiring
-const tg = window.Telegram.WebApp;
-tg.ready(); tg.expand();
+const API = "https://ms-bot-server.onrender.com"; // O'Z Render havolangiz
+const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
 const $ = id => document.getElementById(id);
+const SUBJECTS = ["Matematika","Fizika","Ona tili va adabiyot","Qoraqalpoq tili va adabiyot","Rus tili va adabiyot","Kimyo","Biologiya","Geografiya","Tarix","Ingliz tili"];
+const PRESETS = {
+  "Fizika":{open:5,writ:3,essay:false},
+  "Kimyo":{open:5,writ:3,essay:false},
+  "Biologiya":{open:5,writ:3,essay:false},
+  "Ona tili va adabiyot":{open:10,writ:0,essay:true},
+  "Qoraqalpoq tili va adabiyot":{open:10,writ:0,essay:true},
+  "Rus tili va adabiyot":{open:10,writ:0,essay:true}
+};
+let ME = null;
+let closed = Array(35).fill(null);
+let openAns = [];
+const opts = i => i >= 32 ? "abcdef" : "abcd";
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 async function call(path, body){
-  const r = await fetch(API + path, {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({initData: tg.initData, ...body})
-  });
+  const r = await fetch(API + path, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({initData: tg.initData, ...body})});
   if(!r.ok) throw new Error("server " + r.status);
   return r.json();
 }
+function esc(s){ const d = document.createElement("div"); d.textContent = s ?? ""; return d.innerHTML; }
+const som = n => n ? Number(n).toLocaleString("ru-RU") + " so'm" : "bepul";
 
-function fillRegions(){
-  Object.keys(REGIONS).forEach(n => {
-    const o = document.createElement("option"); o.value = o.textContent = n;
-    $("region").appendChild(o);
-  });
+function showTop(id){ ["loading","reg","app"].forEach(x => $(x).classList.toggle("hidden", x !== id)); $("nav").classList.toggle("hidden", id !== "app"); }
+function go(v){
+  ["tests","answer","create","profile"].forEach(x => $("v-"+x).classList.toggle("hidden", x !== v));
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.v === v));
+  if(v === "tests") loadTests();
+  if(v === "profile") fillProfile();
 }
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => go(b.dataset.v));
+
+/* registration */
+Object.keys(REGIONS).forEach(n => { const o = document.createElement("option"); o.value = o.textContent = n; $("region").appendChild(o); });
 $("region").addEventListener("change", e => {
-  const d = $("district");
-  d.innerHTML = '<option value="">Tumanni tanlang</option>';
+  const d = $("district"); d.innerHTML = '<option value="">Tumanni tanlang</option>';
   const list = REGIONS[e.target.value] || [];
   list.forEach(n => { const o = document.createElement("option"); o.value = o.textContent = n; d.appendChild(o); });
   d.disabled = !list.length;
 });
-
-function show(id){
-  ["loading","reg","home"].forEach(x => $(x).classList.toggle("hidden", x !== id));
-}
-
 $("reg").addEventListener("submit", async e => {
-  e.preventDefault();
-  $("err").textContent = "";
+  e.preventDefault(); $("rerr").textContent = "";
   const first = $("first").value.trim(), last = $("last").value.trim();
-  if(!first || !last || !$("region").value || !$("district").value){
-    $("err").textContent = "Yulduzcha (*) bilan belgilangan maydonlarni to'ldiring"; return;
-  }
-  $("btn").disabled = true;
+  if(!first || !last || !$("region").value || !$("district").value){ $("rerr").textContent = "Yulduzcha (*) maydonlarni to'ldiring"; return; }
+  $("rbtn").disabled = true;
   try{
-    await call("/api/register", {
-      first_name: first, last_name: last,
-      middle_name: $("middle").value.trim() || null,
-      phone: $("phone").value.trim() || null,
-      region: $("region").value, district: $("district").value
-    });
-    $("hello").textContent = "Xush kelibsiz, " + first + "!";
-    show("home");
-  }catch(err){
-    $("err").textContent = "Xatolik. Qayta urinib ko'ring (server uyg'onayotgan bo'lishi mumkin).";
-  }
-  $("btn").disabled = false;
+    await call("/api/register", {first_name:first, last_name:last, middle_name:$("middle").value.trim()||null, phone:$("phone").value.trim()||null, region:$("region").value, district:$("district").value});
+    const r = await call("/api/me", {}); ME = r.user; startApp();
+  }catch(err){ $("rerr").textContent = "Xatolik. Qayta urinib ko'ring (server uyg'onayotgan bo'lishi mumkin)."; }
+  $("rbtn").disabled = false;
 });
 
-(async () => {
-  fillRegions();
+/* tests list */
+async function loadTests(){
+  const box = $("tlist"); box.innerHTML = '<div class="card"><p class="sub" style="margin:0">Yuklanmoqda...</p></div>';
   try{
-    const res = await call("/api/me", {});
-    if(res.user){ $("hello").textContent = "Xush kelibsiz, " + res.user.first_name + "!"; show("home"); }
-    else show("reg");
-  }catch(e){ show("reg"); }
+    const r = await call("/api/tests/list", {});
+    if(!r.tests.length){ box.innerHTML = '<div class="card"><p class="sub" style="margin:0">Hozircha testlar yo\'q. "Test yaratish" bo\'limidan yarating.</p></div>'; return; }
+    box.innerHTML = r.tests.map(t => `<div class="t"><b>${esc(t.title)}</b><small>${esc(t.subject)} · mashq testi</small>
+      <span class="pill">${t.question_count} ta savol</span><span class="pill">${t.duration_minutes} daqiqa</span><span class="pill">${som(t.price)}</span><span class="pill">kod: ${esc(t.code)}</span></div>`).join("");
+  }catch(e){ box.innerHTML = '<div class="card"><p class="sub" style="margin:0">Yuklab bo\'lmadi. Qayta urinib ko\'ring.</p></div>'; }
+}
+
+/* create test: sheet */
+SUBJECTS.forEach(n => { const o = document.createElement("option"); o.value = o.textContent = n; $("subject").appendChild(o); });
+
+function renderClosed(){
+  const g = $("grid"); g.innerHTML = "";
+  closed.forEach((a, i) => {
+    const row = document.createElement("div"); row.className = "qrow";
+    row.innerHTML = `<span class="qn">${i+1}</span>`;
+    for(const c of opts(i)){
+      const b = document.createElement("button"); b.type = "button"; b.textContent = c.toUpperCase();
+      b.className = "opt" + (a === c ? " on" : "");
+      b.onclick = () => { closed[i] = closed[i] === c ? null : c; renderClosed(); };
+      row.appendChild(b);
+    }
+    g.appendChild(row);
+  });
+  $("cnt").textContent = closed.filter(Boolean).length + " / 35 belgilandi";
+}
+
+function renderOpen(){
+  const box = $("openbox"); box.innerHTML = "";
+  $("openT").style.display = openAns.length ? "" : "none";
+  $("openT").textContent = openAns.length ? `Ochiq savollar (36-${35 + openAns.length})` : "";
+  openAns.forEach((lines, qi) => {
+    const h = document.createElement("div"); h.className = "ohead";
+    h.innerHTML = `<span>${36 + qi}-savol</span><div></div>`;
+    const plus = document.createElement("button"); plus.type = "button"; plus.className = "sm"; plus.textContent = "+";
+    plus.onclick = () => { if(lines.length < 6){ lines.push(""); renderOpen(); } };
+    const minus = document.createElement("button"); minus.type = "button"; minus.className = "sm minus"; minus.textContent = "−";
+    minus.onclick = () => { if(lines.length > 1){ lines.pop(); renderOpen(); } };
+    h.lastChild.append(plus, minus);
+    box.appendChild(h);
+    lines.forEach((v, li) => {
+      const r = document.createElement("div"); r.className = "orow";
+      r.innerHTML = `<span class="qn">${li+1})</span>`;
+      const inp = document.createElement("input"); inp.value = v; inp.placeholder = "To'g'ri javob";
+      inp.oninput = () => { lines[li] = inp.value; };
+      r.appendChild(inp); box.appendChild(r);
+    });
+  });
+}
+
+function renderExtra(){
+  const nw = clamp(parseInt($("nwrit").value) || 0, 0, 5);
+  const start = 36 + openAns.length;
+  $("writbox").innerHTML = nw ? `<div class="note">📝 ${start}${nw > 1 ? "-" + (start + nw - 1) : ""}-savol: yozma ish (${nw} ta)</div>` : "";
+  $("essaybox").innerHTML = $("essay").checked ? `<div class="note">✍️ Esse ball: o'quvchi testni ishlab bo'lgach o'zi kiritadi. Umumiy ball = (esse ball + test ball) / 2</div>` : "";
+}
+
+function syncCounts(){
+  const n = clamp(parseInt($("nopen").value) || 0, 0, 10);
+  while(openAns.length < n) openAns.push(["", ""]);
+  openAns.length = n;
+  renderOpen(); renderExtra();
+}
+$("nopen").oninput = syncCounts;
+$("nwrit").oninput = renderExtra;
+$("essay").onchange = renderExtra;
+$("subject").onchange = () => {
+  const p = PRESETS[$("subject").value] || {open:10, writ:0, essay:false};
+  $("nopen").value = p.open; $("nwrit").value = p.writ; $("essay").checked = p.essay;
+  syncCounts();
+};
+
+$("quick").onclick = () => {
+  const s = $("qtext").value.toLowerCase().replace(/\s+/g, "");
+  if(/\d/.test(s)){
+    for(const m of s.matchAll(/(\d+)([a-f])/g)){ const n = +m[1] - 1; if(n >= 0 && n < 35 && opts(n).includes(m[2])) closed[n] = m[2]; }
+  }else{
+    [...s.replace(/[^a-f]/g, "")].forEach((c, i) => { if(i < 35 && opts(i).includes(c)) closed[i] = c; });
+  }
+  renderClosed();
+};
+
+$("make").onclick = async () => {
+  $("cerr").textContent = "";
+  const title = $("title").value.trim();
+  if(!title){ $("cerr").textContent = "Test nomini kiriting"; return; }
+  if(closed.some(a => !a)){ $("cerr").textContent = "1-35 savollarning barcha javoblarini belgilang"; return; }
+  const open_q = openAns.map(l => l.map(s => s.trim()).filter(Boolean));
+  const bad = open_q.findIndex(l => !l.length);
+  if(bad >= 0){ $("cerr").textContent = (36 + bad) + "-savol uchun javob kiriting"; return; }
+  $("make").disabled = true;
+  try{
+    const r = await call("/api/tests/create2", {
+      title, subject:$("subject").value,
+      price: parseInt($("price").value) || 0,
+      duration_minutes: parseInt($("dur").value) || 180,
+      closed, open_q,
+      written: clamp(parseInt($("nwrit").value) || 0, 0, 5),
+      essay: $("essay").checked
+    });
+    $("newcode").textContent = r.code; $("cform").classList.add("hidden"); $("cdone").classList.remove("hidden");
+  }catch(e){ $("cerr").textContent = "Xatolik. Qayta urinib ko'ring."; }
+  $("make").disabled = false;
+};
+$("again").onclick = () => {
+  closed = Array(35).fill(null); $("title").value = ""; $("qtext").value = "";
+  $("subject").onchange(); renderClosed();
+  $("cdone").classList.add("hidden"); $("cform").classList.remove("hidden");
+};
+
+/* profile */
+function fillProfile(){
+  if(!ME) return;
+  $("pname").textContent = [ME.last_name, ME.first_name, ME.middle_name].filter(Boolean).join(" ");
+  $("pbal").textContent = (ME.balance || 0).toLocaleString("ru-RU") + " so'm";
+  $("pphone").textContent = ME.phone || "-"; $("preg").textContent = ME.region; $("pdist").textContent = ME.district;
+}
+
+function startApp(){ showTop("app"); renderClosed(); $("subject").onchange(); go("tests"); }
+
+(async () => {
+  try{
+    const r = await call("/api/me", {});
+    if(r.user){ ME = r.user; startApp(); } else showTop("reg");
+  }catch(e){ showTop("reg"); }
 })();
 </script>
 </body>
-</html>
+  </html>
