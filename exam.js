@@ -1,7 +1,6 @@
 (function(){
 const css = `
-.t{cursor:pointer}
-.timer{position:sticky;top:0;z-index:5;background:#0d1328;border:1px solid var(--line);border-radius:14px;padding:10px 14px;display:flex;justify-content:space-between;margin-bottom:12px;font-weight:700}
+.timer{position:sticky;top:0;z-index:5;background:var(--card2);border:1.5px solid var(--line2);border-radius:14px;padding:10px 14px;display:flex;justify-content:space-between;margin-bottom:12px;font-weight:700}
 .big{font-size:44px;font-weight:800;text-align:center;color:var(--mint);margin:6px 0}
 .lvl{display:inline-block;padding:6px 18px;border-radius:99px;background:linear-gradient(135deg,var(--violet),var(--mint));color:#0b1020;font-weight:800;font-size:22px}
 .rrow{display:grid;grid-template-columns:48px 1fr 1fr;gap:8px;padding:7px 0;border-bottom:1px solid #1a2342;font-size:14px}
@@ -11,7 +10,6 @@ const css = `
 `;
 document.head.insertAdjacentHTML("beforeend", "<style>" + css + "</style>");
 $("app").insertAdjacentHTML("beforeend", '<section id="v-exam" class="hidden"></section>');
-$("v-answer").innerHTML = '<div class="card"><h2>Javob yuborish</h2><p class="sub">Test kodini kiriting</p><label>Test kodi</label><input id="codein" inputmode="numeric" placeholder="Masalan: 1234"><button class="btn" id="codego" type="button">Ochish</button></div>';
 
 let timer = null, CUR = null, D = null, sending = false;
 const stopTimer = () => { if(timer){ clearInterval(timer); timer = null; } };
@@ -191,4 +189,4 @@ function renderResult(t, R){
   };
 }
 })();
-                                                                           
+                   
