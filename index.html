@@ -73,6 +73,7 @@ select:disabled{opacity:.5}
 .codebar input{border:0;padding:10px 4px;background:none;flex:1;min-width:0}
 .codebar button{border:0;background:linear-gradient(135deg,var(--violet),var(--mint));color:#0b1020;font-weight:800;font-size:15px;padding:13px 20px;border-radius:16px}
 .t{cursor:pointer;background:var(--card2);border:1.5px solid var(--line2);border-radius:24px;padding:16px;margin-bottom:12px}
+.pdfdl{display:flex;align-items:center;gap:12px;margin-top:10px;padding:10px 12px;border:1.5px dashed var(--line2);border-radius:16px;color:inherit;text-decoration:none}.pdfdl .pdft{flex:1;display:flex;flex-direction:column}.pdfdl small{color:var(--muted)}.pdfdl .pdfa{width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,.08);display:grid;place-items:center}
 .th{display:flex;align-items:center;gap:14px}
 .ti{width:60px;height:60px;flex:none;border-radius:18px;display:grid;place-items:center;font-size:28px;color:#fff;background:linear-gradient(135deg,var(--violet),#5a8cff)}
 .tm{flex:1;min-width:0}
@@ -276,7 +277,8 @@ function renderTests(){
     <div class="th"><div class="ti">${iconOf(t.subject)}</div>
       <div class="tm"><b>${esc(t.title)}</b><small>${esc(t.subject)} · ${t.question_count} savol · ⏳ ${t.duration_minutes} daq</small></div>
       <span class="tag${t.price ? " paid" : ""}">${t.price ? som(t.price) : "Ochiq"}</span></div>
-    <button class="btn yel" type="button">Testni boshlash</button></div>`).join("");
+    <button class="btn yel" type="button">Testni boshlash</button>
+    ${t.pdf_url ? `<a class="pdfdl" href="${esc(t.pdf_url)}"><span>📄</span><span class="pdft"><b>Savollar PDF</b><small>Yuklab olish</small></span><span class="pdfa">⬇</span></a>` : ""}</div>`).join("");
 }
 async function loadTests(){
   renderChips();
