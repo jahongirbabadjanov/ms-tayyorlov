@@ -7,6 +7,9 @@ const css = `
 .rrow.h{color:var(--muted);font-size:12px}
 .good{color:var(--mint)}.bad{color:var(--danger)}
 .center{text-align:center}
+.zb{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+.zb button{width:42px;height:36px;border-radius:10px;border:1.5px solid var(--line2);background:var(--card2);color:#fff;font-size:20px}
+.pdfbox{height:70vh;overflow:auto;background:#0b1020;border-radius:12px;padding:4px;-webkit-overflow-scrolling:touch}
 `;
 document.head.insertAdjacentHTML("beforeend", "<style>" + css + "</style>");
 $("app").insertAdjacentHTML("beforeend", '<section id="v-exam" class="hidden"></section>');
@@ -19,6 +22,55 @@ const loadDraft = c => { try{ return JSON.parse(localStorage.getItem(dk(c))); }c
 const clearDraft = c => { try{ localStorage.removeItem(dk(c)); }catch(e){} };
 const fmt = s => { s = Math.max(0, s); return [Math.floor(s/3600), Math.floor(s%3600/60), s%60].map(v => String(v).padStart(2, "0")).join(":"); };
 const box = html => { $("v-exam").innerHTML = html; };
+let pdfDoc = null, zoom = 1, drawId = 0;
+function loadPdfJs(){
+  return new Promise((ok, no) => {
+    if(window.pdfjsLib) return ok();
+    const s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+    s.onload = () => { pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; ok(); };
+    s.onerror = no;
+    document.head.appendChild(s);
+  });
+}
+async function showPdf(url){
+  try{
+    await loadPdfJs();
+    pdfDoc = await pdfjsLib.getDocument(url).promise;
+    drawPdf();
+  }catch(e){
+    const b = $("xpages");
+    if(b) b.innerHTML = '<p class="sub">PDF ochilmadi. <a href="' + url + '" target="_blank">Yuklab olish</a></p>';
+  }
+}
+async function drawPdf(){
+  const wrap = $("xpages");
+  if(!wrap || !pdfDoc) return;
+  const my = ++drawId;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = wrap.clientWidth - 8;
+  const pages = [];
+  for(let i = 1; i <= pdfDoc.numPages; i++){
+    const pg = await pdfDoc.getPage(i);
+    if(my !== drawId) return;
+    const sc = (w / pg.getViewport({scale: 1}).width) * zoom;
+    const vp = pg.getViewport({scale: sc * dpr});
+    const cv = document.createElement("canvas");
+    cv.width = vp.width; cv.height = vp.height;
+    cv.style.cssText = "display:block;margin-bottom:8px;background:#fff;width:" + (vp.width / dpr) + "px";
+    await pg.render({canvasContext: cv.getContext("2d"), viewport: vp}).promise;
+    if(my !== drawId) return;
+    pages.push(cv);
+    if(i === 1){ wrap.innerHTML = ""; }
+    wrap.appendChild(cv);
+  }
+}
+function setZoom(d){
+  zoom = Math.min(3, Math.max(0.5, zoom + d));
+  $("zv").textContent = Math.round(zoom * 100) + "%";
+  const wrap = $("xpages"); if(wrap) wrap.innerHTML = "";
+  drawPdf();
+}
 function showExam(){
   ["tests","answer","create","profile"].forEach(x => $("v-" + x).classList.add("hidden"));
   $("v-exam").classList.remove("hidden");
@@ -29,6 +81,8 @@ const _go = window.go;
 window.go = v => { stopTimer(); $("v-exam").classList.add("hidden"); _go(v); };
 
 $("tlist").addEventListener("click", e => {
+  const a = e.target.closest("a.pdfdl");
+  if(a){ e.preventDefault(); if(tg.openLink) tg.openLink(a.href); else window.open(a.href, "_blank"); return; }
   const c = e.target.closest(".t");
   if(c && c.dataset.code) openTest(c.dataset.code);
 });
@@ -50,7 +104,7 @@ async function openTest(code){
     $("xb").onclick = () => go("tests");
   }
 }
-
+  
 function renderNew(r){
   const t = r.test, price = t.price || 0, bal = (ME && ME.balance) || 0, low = price > bal;
   box(`<div class="card"><h2>${esc(t.title)}</h2><p class="sub">${esc(t.subject)}</p>
@@ -70,9 +124,9 @@ function renderNew(r){
     try{ await call("/api/tests/start", {code: t.code}); openTest(t.code); }
     catch(e){ $("xerr").textContent = String(e.message).includes("402") ? "Balans yetarli emas." : "Xatolik. Qayta urinib ko'ring."; $("xstart").disabled = false; }
   };
-}
-
-function renderSheet(r){
+  }
+  
+  function renderSheet(r){
   CUR = r;
   const t = r.test, saved = loadDraft(t.code);
   D = {closed: Array(35).fill(""), open: t.open_parts.map(n => Array(n).fill(""))};
@@ -80,13 +134,21 @@ function renderSheet(r){
   if(saved && saved.open && saved.open.length === D.open.length)
     D.open = D.open.map((row, i) => (saved.open[i] && saved.open[i].length === row.length) ? saved.open[i] : row);
   let left = t.duration_minutes * 60 - r.elapsed;
-  box(`<div class="timer"><span>${esc(t.title)}</span><span id="tm">${fmt(left)}</span></div>
+  zoom = 1; pdfDoc = null;
+  box(`<div class="timer"><button id="xback" type="button" style="background:none;border:0;color:#fff;font-size:22px;padding:0 10px 0 0">←</button><span style="flex:1">${esc(t.title)}</span><span id="tm">${fmt(left)}</span></div>
+    ${t.pdf_url ? `<div class="card"><div class="zb"><button id="zm" type="button">−</button><span id="zv">100%</span><button id="zp" type="button">+</button></div><div class="pdfbox" id="xpages"><p class="sub">PDF yuklanmoqda...</p></div></div>` : ""}
     <div class="card"><div class="sec-t" style="margin-top:0">Yopiq savollar (1-35)</div><div id="xgrid"></div>
     <div id="xopen"></div>
     ${t.written ? `<div class="note">📝 Yozma ishlar (${t.written} ta) qog'ozda bajariladi, bu yerda javob kiritilmaydi.</div>` : ""}
     <div class="err" id="xerr"></div>
     <button class="btn" id="xsend" type="button">Javoblarni yuborish</button></div>`);
   drawGrid(); drawOpen();
+  $("xback").onclick = () => {
+    const out = () => go("tests");
+    if(tg.showConfirm) tg.showConfirm("Testdan chiqasizmi? Vaqt to'xtamaydi, javoblaringiz saqlanadi. Kod bilan qaytib davom ettirasiz.", ok => { if(ok) out(); });
+    else out();
+  };
+  if(t.pdf_url){ $("zm").onclick = () => setZoom(-0.25); $("zp").onclick = () => setZoom(0.25); showPdf(t.pdf_url); }
   $("xsend").onclick = () => send(false);
   stopTimer();
   if(left <= 0){ send(true); return; }
@@ -189,4 +251,3 @@ function renderResult(t, R){
   };
 }
 })();
-                   
