@@ -398,7 +398,8 @@ function startApp(){ fillHello(); showTop("app"); renderClosed(); $("subject").o
 (async () => {
   try{
     const r = await call("/api/me", {});
-    if(r.user){ ME = r.user; startApp(); } else showTop("reg");
+    if(r.user && r.user.region){ ME = r.user; startApp(); }
+    else{ if(r.user){ $("first").value = r.user.first_name || ""; $("last").value = r.user.last_name || ""; } showTop("reg"); }
   }catch(e){ showTop("reg"); }
 })();
 </script>
