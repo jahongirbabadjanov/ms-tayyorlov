@@ -140,6 +140,8 @@ nav button.on i{filter:none;opacity:1}
           <div><label>Yozma ishlar soni (0-5)</label><input id="nwrit" type="number" inputmode="numeric" value="0"></div>
         </div>
         <label class="chk"><input type="checkbox" id="essay"> Esse ball qo'shiladi (o'quvchi o'zi kiritadi)</label>
+        <label>Savollar PDF (ixtiyoriy)</label><input id="pdfq" type="file" accept="application/pdf">
+        <label>Yechimlar PDF (ixtiyoriy)</label><input id="pdfk" type="file" accept="application/pdf">
 
         <div class="sec-t">⚡ Tez kiritish (yopiq savollar)</div>
         <textarea id="qtext" rows="2" placeholder="1a2b3c4d... yoki faqat harflar: abcd..."></textarea>
@@ -373,6 +375,7 @@ $("make").onclick = async () => {
   const open_q = openAns.map(l => l.map(s => s.trim()).filter(Boolean));
   const bad = open_q.findIndex(l => !l.length);
   if(bad >= 0){ $("cerr").textContent = (36 + bad) + "-savol uchun javob kiriting"; return; }
+  for(const id of ["pdfq","pdfk"]){ const f = $(id).files[0]; if(f && f.size > 15*1024*1024){ $("cerr").textContent = "PDF hajmi 15 MB dan oshmasin"; return; } }
   $("make").disabled = true;
   try{
     const r = await call("/api/tests/create2", {
@@ -383,6 +386,13 @@ $("make").onclick = async () => {
       written: clamp(parseInt($("nwrit").value) || 0, 0, 5),
       essay: $("essay").checked
     });
+    const b64 = f => new Promise((ok, no) => { const fr = new FileReader(); fr.onload = () => ok(String(fr.result).split(",")[1]); fr.onerror = no; fr.readAsDataURL(f); });
+    for(const [id, kind] of [["pdfq","q"],["pdfk","k"]]){
+      const f = $(id).files[0];
+      if(!f) continue;
+      try{ await call("/api/tests/pdf_upload", {code: r.code, kind, data: await b64(f)}); }
+      catch(e){ if(tg.showAlert) tg.showAlert("Test yaratildi, lekin PDF yuklanmadi. Keyinroq qayta urinib ko'ring."); }
+    }
     $("newcode").textContent = r.code; $("cform").classList.add("hidden"); $("cdone").classList.remove("hidden");
   }catch(e){ $("cerr").textContent = "Xatolik. Qayta urinib ko'ring."; }
   $("make").disabled = false;
