@@ -233,14 +233,22 @@ $("reg").addEventListener("submit", async e => {
   const middle = $("middle").value.trim();
   const digits = $("phone").value.replace(/\D/g, "");
   const phoneOk = (digits.length === 12 && digits.startsWith("998")) || digits.length === 9;
-  if(!first || !last || !middle || !$("region").value || !$("district").value){ $("rerr").textContent = "Tegishli maydonlarni to'ldiring"; return; }
+  if(!first){ $("rerr").textContent = "Ismni to'ldiring"; return; }
+  if(!last){ $("rerr").textContent = "Familiyani to'ldiring"; return; }
+  if(!middle){ $("rerr").textContent = "Sharifni to'ldiring"; return; }
   if(!phoneOk){ $("rerr").textContent = "Telefon raqamni to'g'ri kiriting: +998 90 123 45 67"; return; }
+  if(!$("region").value){ $("rerr").textContent = "Viloyatni tanlang"; return; }
+  if(!$("district").value){ $("rerr").textContent = "Tumanni tanlang"; return; }
   const phone = "+998" + digits.slice(-9);
   $("rbtn").disabled = true;
   try{
     await call("/api/register", {first_name:first, last_name:last, middle_name:middle, phone:phone, region:$("region").value, district:$("district").value});
     const r = await call("/api/me", {}); ME = r.user; startApp();
-  }catch(err){ $("rerr").textContent = "Xatolik. Qayta urinib ko'ring (server uyg'onayotgan bo'lishi mumkin)."; }
+  }catch(err){
+    $("rerr").textContent = String(err.message).includes("409")
+      ? "Bu telefon raqam bilan avval ro'yxatdan o'tilgan"
+      : "Xatolik. Qayta urinib ko'ring (server uyg'onayotgan bo'lishi mumkin).";
+  }
   $("rbtn").disabled = false;
 });
 
