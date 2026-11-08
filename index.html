@@ -100,8 +100,8 @@ nav button.on i{filter:none;opacity:1}
     <h2>Ro'yxatdan o'tish</h2><p class="sub">Ma'lumotlaringizni kiriting</p>
     <label>Ism *</label><input id="first">
     <label>Familiya *</label><input id="last">
-    <label>Sharifi</label><input id="middle">
-    <label>Telefon raqam</label><input id="phone" type="tel" placeholder="+998 90 123 45 67">
+    <label>Sharifi *</label><input id="middle">
+    <label>Telefon raqam *</label><input id="phone" type="tel" placeholder="+998 90 123 45 67">
     <label>Viloyat *</label><select id="region"><option value="">Viloyatni tanlang</option></select>
     <label>Tuman *</label><select id="district" disabled><option value="">Avval viloyatni tanlang</option></select>
     <div class="err" id="rerr"></div>
@@ -230,10 +230,15 @@ $("region").addEventListener("change", e => {
 $("reg").addEventListener("submit", async e => {
   e.preventDefault(); $("rerr").textContent = "";
   const first = $("first").value.trim(), last = $("last").value.trim();
-  if(!first || !last || !$("region").value || !$("district").value){ $("rerr").textContent = "Yulduzcha (*) maydonlarni to'ldiring"; return; }
+  const middle = $("middle").value.trim();
+  const digits = $("phone").value.replace(/\D/g, "");
+  const phoneOk = (digits.length === 12 && digits.startsWith("998")) || digits.length === 9;
+  if(!first || !last || !middle || !$("region").value || !$("district").value){ $("rerr").textContent = "Tegishli maydonlarni to'ldiring"; return; }
+  if(!phoneOk){ $("rerr").textContent = "Telefon raqamni to'g'ri kiriting: +998 90 123 45 67"; return; }
+  const phone = "+998" + digits.slice(-9);
   $("rbtn").disabled = true;
   try{
-    await call("/api/register", {first_name:first, last_name:last, middle_name:$("middle").value.trim()||null, phone:$("phone").value.trim()||null, region:$("region").value, district:$("district").value});
+    await call("/api/register", {first_name:first, last_name:last, middle_name:middle, phone:phone, region:$("region").value, district:$("district").value});
     const r = await call("/api/me", {}); ME = r.user; startApp();
   }catch(err){ $("rerr").textContent = "Xatolik. Qayta urinib ko'ring (server uyg'onayotgan bo'lishi mumkin)."; }
   $("rbtn").disabled = false;
