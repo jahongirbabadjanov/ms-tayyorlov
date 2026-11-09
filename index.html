@@ -143,6 +143,10 @@ nav button.on i{filter:none;opacity:1}
         <label class="chk"><input type="checkbox" id="essay"> Esse ball qo'shiladi (o'quvchi o'zi kiritadi)</label>
         <label>Savollar PDF (ixtiyoriy)</label><input id="pdfq" type="file" accept="application/pdf">
         <label>Yechimlar PDF (ixtiyoriy)</label><input id="pdfk" type="file" accept="application/pdf">
+        <div class="row2">
+          <div><label>Boshlanish (ixtiyoriy)</label><input id="starts" type="datetime-local"></div>
+          <div><label>Tugash (ixtiyoriy)</label><input id="ends" type="datetime-local"></div>
+        </div>
 
         <div class="sec-t">⚡ Tez kiritish (yopiq savollar)</div>
         <textarea id="qtext" rows="2" placeholder="1a2b3c4d... yoki faqat harflar: abcd..."></textarea>
@@ -378,6 +382,8 @@ $("make").onclick = async () => {
   const bad = open_q.findIndex(l => !l.length);
   if(bad >= 0){ $("cerr").textContent = (36 + bad) + "-savol uchun javob kiriting"; return; }
   for(const id of ["pdfq","pdfk"]){ const f = $(id).files[0]; if(f && f.size > 15*1024*1024){ $("cerr").textContent = "PDF hajmi 15 MB dan oshmasin"; return; } }
+  const sv = $("starts").value, ev = $("ends").value;
+  if(sv && ev && new Date(ev) <= new Date(sv)){ $("cerr").textContent = "Tugash vaqti boshlanishdan keyin bo'lsin"; return; }
   $("make").disabled = true;
   try{
     const r = await call("/api/tests/create2", {
@@ -386,7 +392,9 @@ $("make").onclick = async () => {
       duration_minutes: parseInt($("dur").value) || 180,
       closed, open_q,
       written: clamp(parseInt($("nwrit").value) || 0, 0, 5),
-      essay: $("essay").checked
+      essay: $("essay").checked,
+      starts_at: sv ? new Date(sv).toISOString() : null,
+      ends_at: ev ? new Date(ev).toISOString() : null
     });
     const b64 = f => new Promise((ok, no) => { const fr = new FileReader(); fr.onload = () => ok(String(fr.result).split(",")[1]); fr.onerror = no; fr.readAsDataURL(f); });
     for(const [id, kind] of [["pdfq","q"],["pdfk","k"]]){
