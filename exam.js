@@ -98,7 +98,7 @@ async function openTest(code){
       try{ const m = await call("/api/me", {}); ME = m.user; }catch(e){}
       renderNew(r);
     }else if(r.state === "started") renderSheet(r);
-    else renderResult(r.test, r.result);
+    else renderResult(r.test, r.result, r.key_pdf_url);
   }catch(e){
     box('<div class="card"><p class="sub">Test topilmadi yoki xatolik chiqdi.</p><button class="btn sec" id="xb" type="button">Orqaga</button></div>');
     $("xb").onclick = () => go("tests");
@@ -107,6 +107,10 @@ async function openTest(code){
   
 function renderNew(r){
   const t = r.test, price = t.price || 0, bal = (ME && ME.balance) || 0, low = price > bal;
+  const st = t.starts_at ? Date.parse(t.starts_at) : 0, en = t.ends_at ? Date.parse(t.ends_at) : 0, nowT = Date.now();
+  const fm = x => new Date(x).toLocaleString("ru-RU", {day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit"});
+  const early = st && nowT < st, late = en && nowT > en, closedNow = early || late;
+  const note = early ? `<p class="err">Test hali boshlanmagan. Boshlanish: ${fm(st)}</p>` : late ? `<p class="err">Test vaqti tugagan (${fm(en)}).</p>` : (en ? `<p class="sub">Tugash vaqti: ${fm(en)}</p>` : "");
   box(`<div class="card"><h2>${esc(t.title)}</h2><p class="sub">${esc(t.subject)}</p>
     <div class="kv"><span>Savollar soni</span><span>${t.question_count} ta</span></div>
     <div class="kv"><span>Vaqt</span><span>${t.duration_minutes} daqiqa</span></div>
@@ -115,15 +119,15 @@ function renderNew(r){
     <div class="card"><b>Qoidalar</b>
     <p class="sub" style="margin-top:8px">• Taymer boshlaganingizda ishga tushadi va to'xtamaydi.<br>• Javoblar avtomatik saqlanadi, ilovani yopsangiz ham davom ettirasiz.<br>• Vaqt tugasa, javoblar o'zi topshiriladi.<br>• Natija va to'g'ri javoblar darhol chiqadi.</p></div>
     ${low ? `<p class="err">Balansingiz: ${som(bal)}. Boshlash uchun ${som(price)} yetmaydi.</p>` : ""}
+    ${note}
     <div class="err" id="xerr"></div>
-    <button class="btn" id="xstart" type="button" ${low ? "disabled" : ""}>Testni boshlash${price ? " — " + som(price) : ""}</button>
+    <button class="btn" id="xstart" type="button" ${low || closedNow ? "disabled" : ""}>Testni boshlash${price ? " — " + som(price) : ""}</button>
     <button class="btn sec" id="xb" type="button">Orqaga</button>`);
   $("xb").onclick = () => go("tests");
   $("xstart").onclick = async () => {
     $("xstart").disabled = true;
     try{ await call("/api/tests/start", {code: t.code}); openTest(t.code); }
-    catch(e){ $("xerr").textContent = String(e.message).includes("402") ? "Balans yetarli emas." : "Xatolik. Qayta urinib ko'ring."; $("xstart").disabled = false; }
-  };
+    catch(e){ const m = String(e.message); $("xerr").textContent = m.includes("402") ? "Balans yetarli emas." : m.includes("403") ? "Test hozir ochiq emas (vaqti tugagan yoki hali boshlanmagan)." : "Xatolik. Qayta urinib ko'ring."; $("xstart").disabled = false; }
   }
   
   function renderSheet(r){
@@ -201,7 +205,7 @@ function send(auto){
     if($("xsend")) $("xsend").disabled = true;
     try{
       const res = await call("/api/tests/submit", {code: t.code, closed: D.closed, open_a: D.open});
-      clearDraft(t.code); sending = false; renderResult(t, res.result);
+      clearDraft(t.code); sending = false; openTest(t.code);
     }catch(e){
       sending = false;
       if(String(e.message).includes("409")){ openTest(t.code); return; }
@@ -215,7 +219,7 @@ function send(auto){
   else go2();
 }
 
-function renderResult(t, R){
+function renderResult(t, R, keyPdf){
   stopTimer(); showExam();
   const lvl = R.level ? `<span class="lvl">${R.level}</span>` : `<span class="sub">Daraja berilmadi (46 balldan past)</span>`;
   const nm = R.extra === "written" ? "Yozma ish ball" : "Esse ball";
@@ -241,12 +245,14 @@ function renderResult(t, R){
     const ok = R.ok[idx++], my = (R.my.open[qi] && R.my.open[qi][pi]) || "-";
     rows += `<div class="rrow"><span>${36 + qi}.${pi + 1}</span><span class="${ok ? "good" : "bad"}">${ok ? "✔" : "✖"} ${esc(my)}</span><span>${esc(p)}</span></div>`;
   }));
-  box(top + `<div class="card"><h2>To'g'ri javoblar</h2>${rows}</div><button class="btn sec" id="xb" type="button">Testlar ro'yxatiga qaytish</button>`);
+  const keyBtn = keyPdf ? `<button class="btn yel" id="xkey" type="button">✅ Yechimlar PDF</button>` : "";
+  box(top + keyBtn + `<div class="card"><h2>To'g'ri javoblar</h2>${rows}</div><button class="btn sec" ...>Testlar ro'yxatiga qaytish</button>`);
   $("xb").onclick = () => go("tests");
+  if($("xkey")) $("xkey").onclick = () => { if(tg.openLink) tg.openLink(keyPdf); else window.open(keyPdf, "_blank"); };
   if($("ebtn")) $("ebtn").onclick = async () => {
     const v = parseFloat($("eball").value);
     if(!(v >= 0 && v <= 75)){ $("eerr").textContent = "0 dan 75 gacha son kiriting"; return; }
-    try{ const r = await call("/api/tests/essay", {code: t.code, ball: v}); renderResult(t, r.result); }
+    try{ const r = await call("/api/tests/essay", {code: t.code, ball: v}); renderResult(t, r.result, keyPdf); }
     catch(e){ $("eerr").textContent = "Xatolik. Qayta urinib ko'ring."; }
   };
 }
