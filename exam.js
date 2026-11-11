@@ -86,8 +86,16 @@ function showExam(){
 const _go = window.go;
 window.go = v => { stopTimer(); $("v-exam").classList.add("hidden"); _go(v); };
 
+function toast(m){
+  const d = document.createElement("div");
+  d.textContent = m;
+  d.style.cssText = "position:fixed;left:16px;right:16px;bottom:96px;z-index:99;padding:13px 16px;border-radius:14px;background:#1f2a55;border:1.5px solid #ffd166;color:#eef1ff;font-size:14px;font-weight:600;text-align:center";
+  document.body.appendChild(d);
+  setTimeout(() => d.remove(), 2800);
+}
 $("tlist").addEventListener("click", e => {
   const a = e.target.closest("a.pdfdl");
+  if(a && a.dataset.lock){ e.preventDefault(); toast("Savollarni yuklab olish uchun avval testni sotib oling."); return; }
   if(a){ e.preventDefault(); if(tg.openLink) tg.openLink(a.href); else window.open(a.href, "_blank"); return; }
   const c = e.target.closest(".t");
   if(c && c.dataset.code) openTest(c.dataset.code);
