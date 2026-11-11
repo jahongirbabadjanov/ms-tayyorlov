@@ -110,8 +110,8 @@ function renderNew(r){
   const st = t.starts_at ? Date.parse(t.starts_at) : 0, en = t.ends_at ? Date.parse(t.ends_at) : 0, nowT = Date.now();
   const fm = x => new Date(x).toLocaleString("ru-RU", {day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit"});
   const early = st && nowT < st, late = en && nowT > en, closedNow = early || late;
-  const note = early ? `<p class="err">Test hali boshlanmagan. Boshlanish: ${fm(st)}</p>` : late ? `<p class="err">Test vaqti tugagan (${fm(en)}).</p>` : (en ? `<p class="sub">Tugash vaqti: ${fm(en)}</p>` : "");
-  box(`<div class="card"><h2>${esc(t.title)}</h2><p class="sub">${esc(t.subject)}</p>
+  const note = early ? `<p class="err" id="wn" style="color:#ffd166"></p>` : late ? `<p class="err">Test vaqti tugagan (${fm(en)}).</p>` : (en ? `<p class="sub">Tugash vaqti: ${fm(en)}</p>` : "");
+  box(`<div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><div><h2>${esc(t.title)}</h2><p class="sub">${esc(t.subject)}</p></div>${early ? '<span class="tag wait" id="cd"></span>' : ""}</div>
     <div class="kv"><span>Savollar soni</span><span>${t.question_count} ta</span></div>
     <div class="kv"><span>Vaqt</span><span>${t.duration_minutes} daqiqa</span></div>
     <div class="kv"><span>Narx</span><span>${som(price)}</span></div>
@@ -124,6 +124,20 @@ function renderNew(r){
     <button class="btn" id="xstart" type="button" ${low || closedNow ? "disabled" : ""}>Testni boshlash${price ? " — " + som(price) : ""}</button>
     <button class="btn sec" id="xb" type="button">Orqaga</button>`);
   $("xb").onclick = () => go("tests");
+  if(early){
+    const cd = $("cd"), wn = $("wn");
+    const p2 = n => String(n).padStart(2, "0");
+    const tick = () => {
+      if(!cd.isConnected){ clearInterval(iv); return; }
+      const s = Math.max(0, Math.ceil((st - Date.now()) / 1000));
+      if(s <= 0){ clearInterval(iv); renderNew(r); return; }
+      const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
+      cd.textContent = "⏰ " + (d ? d + " kun " : "") + p2(h) + ":" + p2(m) + ":" + p2(s % 60);
+      wn.textContent = "Test hali boshlanmadi. Boshlanishiga " + (d ? d + " kun " : "") + (h ? h + " soat " : "") + m + " daqiqa qoldi";
+    };
+    const iv = setInterval(tick, 1000);
+    tick();
+  }
   $("xstart").onclick = async () => {
     $("xstart").disabled = true;
     try{ await call("/api/tests/start", {code: t.code}); openTest(t.code); }
