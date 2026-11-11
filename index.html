@@ -81,6 +81,7 @@ select:disabled{opacity:.5}
 .tm small{display:block;margin-top:5px;color:#aeb8e0;font-size:14px}
 .tag{flex:none;align-self:flex-start;padding:7px 12px;border-radius:12px;background:var(--soft);color:var(--mint);font-weight:700;font-size:14px}
 .tag.paid{background:#4a3f6e;color:#ffd36e}
+.tag.wait{color:#ffd166}.tag.live{color:var(--mint)}.tag.end{color:var(--muted)}.tag.wait,.tag.live,.tag.end{white-space:nowrap}
 .empty{border:1.5px dashed var(--line2);border-radius:24px;padding:34px 18px;text-align:center;color:var(--muted);background:#1f2a5566}
 .empty div{font-size:46px;margin-bottom:8px}
 .empty b{display:block;color:var(--text);font-size:19px;margin-bottom:6px}
@@ -269,6 +270,17 @@ function renderChips(){
   const mk = (name, val, n) => `<button class="chip${FILTER === val ? " on" : ""}" data-s="${esc(val)}">${esc(name)}${n ? `<em>${n}</em>` : ""}</button>`;
   $("chips").innerHTML = mk("Barchasi", "", TESTS.length) + SUBJECTS.map(n => mk(n, n, cnt[n])).join("");
 }
+function tagOf(t){
+  const now = Date.now();
+  const st = t.starts_at ? Date.parse(t.starts_at) : 0, en = t.ends_at ? Date.parse(t.ends_at) : 0;
+  const hm = x => new Date(x).toLocaleTimeString("ru-RU", {hour: "2-digit", minute: "2-digit"});
+  const dm = x => new Date(x).toLocaleDateString("ru-RU", {day: "2-digit", month: "2-digit"});
+  if(en && now > en) return '<span class="tag end">Tugagan</span>';
+  if(t.price) return '<span class="tag paid">' + som(t.price) + "</span>";
+  if(st && now < st) return '<span class="tag wait">⏰ ' + dm(st) + " " + hm(st) + "</span>";
+  if(en) return '<span class="tag live">⏱ ' + hm(en) + " gacha</span>";
+  return '<span class="tag">Ochiq</span>';
+}
 function renderTests(){
   const box = $("tlist");
   if(CAT !== "ms"){
@@ -280,9 +292,9 @@ function renderTests(){
   box.innerHTML = list.map(t => `<div class="t" data-code="${esc(t.code)}">
     <div class="th"><div class="ti">${iconOf(t.subject)}</div>
       <div class="tm"><b>${esc(t.title)}</b><small>${esc(t.subject)} · ${t.question_count} savol · ⏳ ${t.duration_minutes} daq</small></div>
-      <span class="tag${t.price ? " paid" : ""}">${t.price ? som(t.price) : "Ochiq"}</span></div>
+      ${tagOf(t)}</div>
     <button class="btn yel" type="button">Testni boshlash</button>
-    ${t.pdf_url ? `<a class="pdfdl" href="${esc(t.pdf_url)}"><span>📄</span><span class="pdft"><b>Savollar PDF</b><small>Yuklab olish</small></span><span class="pdfa">⬇</span></a>` : ""}</div>`).join("");
+    ${t.pdf_url ? `<a class="pdfdl" href="${esc(t.pdf_url)}"><span>📄</span><span class="pdft"><b>Savollar PDF</b><small>Yuklab olish</small></span><span class="pdfa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M6 11l6 6 6-6M5 20h14"/></svg></span></a>` : ""}</div>`).join("");
 }
 async function loadTests(){
   renderChips();
