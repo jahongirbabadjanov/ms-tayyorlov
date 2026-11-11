@@ -9,12 +9,15 @@ const css = `
 .center{text-align:center}
 .zb{display:flex;gap:10px;align-items:center;margin-bottom:8px}
 .zb button{width:42px;height:36px;border-radius:10px;border:1.5px solid var(--line2);background:var(--card2);color:#fff;font-size:20px}
+.ibtn{width:44px;height:44px;flex:none;border-radius:14px;border:1.5px solid var(--line2);background:var(--ibg,#2b3770);color:var(--ifg,#cfd9ff);display:grid;place-items:center;padding:0}
+.timer{align-items:center}
 .pdfbox{height:70vh;overflow:auto;background:#0b1020;border-radius:12px;padding:4px;-webkit-overflow-scrolling:touch}
 `;
 document.head.insertAdjacentHTML("beforeend", "<style>" + css + "</style>");
 $("app").insertAdjacentHTML("beforeend", '<section id="v-exam" class="hidden"></section>');
 
 let timer = null, CUR = null, D = null, sending = false, PREV = "tests";
+const BACK = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>';
 const stopTimer = () => { if(timer){ clearInterval(timer); timer = null; } };
 const dk = c => "draft_" + c;
 const saveDraft = () => { try{ localStorage.setItem(dk(CUR.test.code), JSON.stringify(D)); }catch(e){} };
@@ -22,7 +25,7 @@ const loadDraft = c => { try{ return JSON.parse(localStorage.getItem(dk(c))); }c
 const clearDraft = c => { try{ localStorage.removeItem(dk(c)); }catch(e){} };
 const fmt = s => { s = Math.max(0, s); return [Math.floor(s/3600), Math.floor(s%3600/60), s%60].map(v => String(v).padStart(2, "0")).join(":"); };
 const box = html => {
-  $("v-exam").innerHTML = (html.includes('id="xback"') ? "" : '<button id="xtop" type="button" aria-label="Orqaga" style="width:44px;height:40px;margin-bottom:10px;border-radius:12px;border:1.5px solid var(--line2);background:var(--card2);color:var(--text);font-size:22px;font-weight:700">←</button>') + html;
+  $("v-exam").innerHTML = (html.includes('id="xback"') ? "" : '<button id="xtop" type="button" class="ibtn" aria-label="Orqaga" style="margin-bottom:10px">' + BACK + '</button>') + html;
   const tb = $("xtop");
   if(tb) tb.onclick = () => { stopTimer(); go(PREV); };
 };
@@ -159,7 +162,7 @@ function renderNew(r){
   }
 }
 
-  function renderSheet(r){
+function renderSheet(r){
   CUR = r;
   const t = r.test, saved = loadDraft(t.code);
   D = {closed: Array(35).fill(""), open: t.open_parts.map(n => Array(n).fill(""))};
@@ -168,7 +171,7 @@ function renderNew(r){
     D.open = D.open.map((row, i) => (saved.open[i] && saved.open[i].length === row.length) ? saved.open[i] : row);
   let left = t.duration_minutes * 60 - r.elapsed;
   zoom = 1; pdfDoc = null;
-  box(`<div class="timer"><button id="xback" type="button" style="background:none;border:0;color:#fff;font-size:22px;padding:0 10px 0 0">←</button><span style="flex:1">${esc(t.title)}</span><span id="tm">${fmt(left)}</span></div>
+  box(`<div class="timer"><button id="xback" type="button" class="ibtn" aria-label="Orqaga" style="margin-right:10px">${BACK}</button><span style="flex:1">${esc(t.title)}</span><span id="tm">${fmt(left)}</span></div>
     ${t.pdf_url ? `<div class="card"><div class="zb"><button id="zm" type="button">−</button><span id="zv">100%</span><button id="zp" type="button">+</button></div><div class="pdfbox" id="xpages"><p class="sub">PDF yuklanmoqda...</p></div></div>` : ""}
     <div class="card"><div class="sec-t" style="margin-top:0">Yopiq savollar (1-35)</div><div id="xgrid"></div>
     <div id="xopen"></div>
