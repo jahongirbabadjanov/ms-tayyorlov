@@ -14,14 +14,18 @@ const css = `
 document.head.insertAdjacentHTML("beforeend", "<style>" + css + "</style>");
 $("app").insertAdjacentHTML("beforeend", '<section id="v-exam" class="hidden"></section>');
 
-let timer = null, CUR = null, D = null, sending = false;
+let timer = null, CUR = null, D = null, sending = false, PREV = "tests";
 const stopTimer = () => { if(timer){ clearInterval(timer); timer = null; } };
 const dk = c => "draft_" + c;
 const saveDraft = () => { try{ localStorage.setItem(dk(CUR.test.code), JSON.stringify(D)); }catch(e){} };
 const loadDraft = c => { try{ return JSON.parse(localStorage.getItem(dk(c))); }catch(e){ return null; } };
 const clearDraft = c => { try{ localStorage.removeItem(dk(c)); }catch(e){} };
 const fmt = s => { s = Math.max(0, s); return [Math.floor(s/3600), Math.floor(s%3600/60), s%60].map(v => String(v).padStart(2, "0")).join(":"); };
-const box = html => { $("v-exam").innerHTML = html; };
+const box = html => {
+  $("v-exam").innerHTML = (html.includes('id="xback"') ? "" : '<button id="xtop" type="button" aria-label="Orqaga" style="width:44px;height:40px;margin-bottom:10px;border-radius:12px;border:1.5px solid var(--line2);background:var(--card2);color:var(--text);font-size:22px;font-weight:700">←</button>') + html;
+  const tb = $("xtop");
+  if(tb) tb.onclick = () => { stopTimer(); go(PREV); };
+};
 let pdfDoc = null, zoom = 1, drawId = 0;
 function loadPdfJs(){
   return new Promise((ok, no) => {
@@ -72,6 +76,8 @@ function setZoom(d){
   drawPdf();
 }
 function showExam(){
+  const cur = ["tests","answer","create","profile"].find(x => !$("v-" + x).classList.contains("hidden"));
+  if(cur) PREV = cur;
   ["tests","answer","create","profile"].forEach(x => $("v-" + x).classList.add("hidden"));
   $("v-exam").classList.remove("hidden");
   window.scrollTo(0, 0);
@@ -101,7 +107,7 @@ async function openTest(code){
     else renderResult(r.test, r.result, r.key_pdf_url);
   }catch(e){
     box('<div class="card"><p class="sub">Test topilmadi yoki xatolik chiqdi.</p><button class="btn sec" id="xb" type="button">Orqaga</button></div>');
-    $("xb").onclick = () => go("tests");
+    $("xb").onclick = () => go(PREV);
   }
 }
   
@@ -123,7 +129,7 @@ function renderNew(r){
     <div class="err" id="xerr"></div>
     <button class="btn" id="xstart" type="button" ${low || closedNow ? "disabled" : ""}>Testni boshlash${price ? " — " + som(price) : ""}</button>
     <button class="btn sec" id="xb" type="button">Orqaga</button>`);
-  $("xb").onclick = () => go("tests");
+  $("xb").onclick = () => go(PREV);
   if(early){
     const cd = $("cd"), wn = $("wn");
     const p2 = n => String(n).padStart(2, "0");
@@ -262,7 +268,7 @@ function renderResult(t, R, keyPdf){
   }));
   const keyBtn = keyPdf ? `<button class="btn yel" id="xkey" type="button">✅ Yechimlar PDF</button>` : "";
   box(top + keyBtn + `<div class="card"><h2>To'g'ri javoblar</h2>${rows}</div><button class="btn sec" id="xb" type="button">Testlar ro'yxatiga qaytish</button>`);
-  $("xb").onclick = () => go("tests");
+  $("xb").onclick = () => go(PREV);
   if($("xkey")) $("xkey").onclick = () => { if(tg.openLink) tg.openLink(keyPdf); else window.open(keyPdf, "_blank"); };
   if($("ebtn")) $("ebtn").onclick = async () => {
     const v = parseFloat($("eball").value);
