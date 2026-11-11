@@ -154,6 +154,9 @@ async function openTopup(amount){
         if(f.size > 4 * 1024 * 1024){ photo = ""; $("tp-err").textContent = "PDF hajmi 4 MB dan oshmasin."; return; }
         photo = await readFile(f); kind = "pdf";
         $("tp-fn").textContent = "📄 " + f.name;
+      }else if(f.size <= 4 * 1024 * 1024 && /^image\/(png|jpeg|webp)$/.test(f.type)){
+        photo = await readFile(f); kind = "photo";
+        $("tp-fn").innerHTML = '<img src="' + photo + '" alt=""> ' + esc(f.name);
       }else{
         photo = await toJpeg(f); kind = "photo";
         $("tp-fn").innerHTML = '<img src="' + photo + '" alt=""> ' + esc(f.name);
