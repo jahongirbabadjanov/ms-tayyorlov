@@ -98,15 +98,27 @@ function toJpeg(file){
   return new Promise((res, rej) => {
     const img = new Image(), url = URL.createObjectURL(file);
     img.onload = () => {
-      const k = Math.min(1, 1280 / Math.max(img.width, img.height));
+      const k = Math.min(1, 1600 / Math.max(img.width, img.height));
       const c = document.createElement("canvas");
       c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
-      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      const g = c.getContext("2d");
+      g.fillStyle = "#ffffff";
+      g.fillRect(0, 0, c.width, c.height);
+      g.drawImage(img, 0, 0, c.width, c.height);
       URL.revokeObjectURL(url);
-      res(c.toDataURL("image/jpeg", 0.8));
+      res(c.toDataURL("image/jpeg", 0.85));
     };
     img.onerror = () => rej(new Error("img"));
     img.src = url;
+  });
+}
+
+function readFile(file){
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onload = () => res(String(fr.result));
+    fr.onerror = () => rej(new Error("read"));
+    fr.readAsDataURL(file);
   });
 }
 
@@ -115,7 +127,7 @@ async function openTopup(amount){
   if(!W) await loadW();
   const w = W || {}, min = w.min_topup || 5000, max = w.max_topup || 5000000;
   const card = digits(w.card).replace(/(.{4})/g, "$1 ").trim();
-  let photo = "";
+  let photo = "", kind = "photo";
   $("v-wallet").innerHTML = head("Balansni to‘ldirish") +
     '<div class="wl-sum"><small>Hozirgi balans</small><b>' + money(w.balance) + '</b></div>' +
     '<div class="wl-box"><label for="tp-sum">Summa (so‘m)</label>' +
@@ -124,8 +136,8 @@ async function openTopup(amount){
     '<label>Karta raqami (Humo)</label>' +
     '<div class="wl-card"><span id="tp-card">' + (card || "Hali kiritilmagan") + '</span>' + (card ? '<button id="tp-copy" type="button">Nusxalash</button>' : '') + '</div>' +
     '<ul class="wl-notes"><li>Summani yozing va shu kartaga o‘tkazing</li><li>To‘lov chekining rasmini yuboring</li><li>Admin tasdiqlagach balans to‘ldiriladi</li></ul>' +
-    '<label>Chek rasmi</label><label class="wl-file" for="tp-file"><span id="tp-fn">Rasm tanlang</span></label>' +
-    '<input id="tp-file" type="file" accept="image/*" class="hidden">' +
+    '<label>Chek (rasm yoki PDF)</label><label class="wl-file" for="tp-file"><span id="tp-fn">Rasm yoki PDF tanlang</span></label>' +
+    '<input id="tp-file" type="file" accept="image/*,application/pdf" class="hidden">' +
     '<div class="err" id="tp-err"></div><button class="wl-go" id="tp-go" type="button">Chekni yuborish</button></div>' +
     hist("topup");
   wire();
@@ -136,19 +148,26 @@ async function openTopup(amount){
   };
   $("tp-file").onchange = async e => {
     const f = e.target.files[0]; if(!f) return;
+    $("tp-err").textContent = "";
     try{
-      photo = await toJpeg(f);
-      $("tp-fn").innerHTML = '<img src="' + photo + '" alt=""> ' + esc(f.name);
-    }catch(err){ photo = ""; $("tp-err").textContent = "Rasm o‘qilmadi. Boshqa rasm tanlang."; }
+      if(f.type === "application/pdf" || /\.pdf$/i.test(f.name)){
+        if(f.size > 4 * 1024 * 1024){ photo = ""; $("tp-err").textContent = "PDF hajmi 4 MB dan oshmasin."; return; }
+        photo = await readFile(f); kind = "pdf";
+        $("tp-fn").textContent = "📄 " + f.name;
+      }else{
+        photo = await toJpeg(f); kind = "photo";
+        $("tp-fn").innerHTML = '<img src="' + photo + '" alt=""> ' + esc(f.name);
+      }
+    }catch(err){ photo = ""; $("tp-err").textContent = "Fayl o‘qilmadi. Boshqa fayl tanlang."; }
   };
   $("tp-go").onclick = async () => {
     const amt = parseInt(digits($("tp-sum").value), 10) || 0;
     $("tp-err").textContent = "";
     if(amt < min || amt > max){ $("tp-err").textContent = "Summa " + money(min) + " dan " + money(max) + " gacha bo‘lishi kerak."; return; }
-    if(!photo){ $("tp-err").textContent = "Chek rasmini tanlang."; return; }
+    if(!photo){ $("tp-err").textContent = "Chek rasmini yoki PDF faylini tanlang."; return; }
     $("tp-go").disabled = true;
     try{
-      await call("/api/topup", {amount: amt, photo: photo.split(",")[1]});
+      await call("/api/topup", {amount: amt, photo: photo.split(",")[1], kind: kind});
       await loadW();
       doneView("Balansni to‘ldirish", "Chek yuborildi. Admin tekshirgach balansingiz to‘ldiriladi.");
     }catch(e){
