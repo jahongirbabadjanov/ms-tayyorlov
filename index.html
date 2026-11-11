@@ -294,7 +294,7 @@ function renderTests(){
       <div class="tm"><b>${esc(t.title)}</b><small>${esc(t.subject)} · ${t.question_count} savol · ⏳ ${t.duration_minutes} daq</small></div>
       ${tagOf(t)}</div>
     <button class="btn yel" type="button">Testni boshlash</button>
-    ${t.pdf_url ? `<a class="pdfdl" href="${esc(t.pdf_url)}"><span>📄</span><span class="pdft"><b>Savollar PDF</b><small>Yuklab olish</small></span><span class="pdfa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M6 11l6 6 6-6M5 20h14"/></svg></span></a>` : ""}</div>`).join("");
+    ${t.pdf_url ? `<a class="pdfdl" href="${esc(t.pdf_url)}"><span>📄</span><span class="pdft"><b>Savollar PDF</b><small>Yuklab olish</small></span><span class="pdfa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M6 11l6 6 6-6M5 20h14"/></svg></span></a>` : t.pdf_locked ? `<a class="pdfdl" href="#" data-lock="1"><span>🔒</span><span class="pdft"><b>Savollar PDF</b><small>Sotib olgach ochiladi</small></span></a>` : ""}</div>`).join("");
 }
 async function loadTests(){
   renderChips();
