@@ -129,7 +129,8 @@ function renderNew(r){
     try{ await call("/api/tests/start", {code: t.code}); openTest(t.code); }
     catch(e){ const m = String(e.message); $("xerr").textContent = m.includes("402") ? "Balans yetarli emas." : m.includes("403") ? "Test hozir ochiq emas (vaqti tugagan yoki hali boshlanmagan)." : "Xatolik. Qayta urinib ko'ring."; $("xstart").disabled = false; }
   }
-  
+}
+
   function renderSheet(r){
   CUR = r;
   const t = r.test, saved = loadDraft(t.code);
@@ -246,7 +247,7 @@ function renderResult(t, R, keyPdf){
     rows += `<div class="rrow"><span>${36 + qi}.${pi + 1}</span><span class="${ok ? "good" : "bad"}">${ok ? "✔" : "✖"} ${esc(my)}</span><span>${esc(p)}</span></div>`;
   }));
   const keyBtn = keyPdf ? `<button class="btn yel" id="xkey" type="button">✅ Yechimlar PDF</button>` : "";
-  box(top + keyBtn + `<div class="card"><h2>To'g'ri javoblar</h2>${rows}</div><button class="btn sec" ...>Testlar ro'yxatiga qaytish</button>`);
+  box(top + keyBtn + `<div class="card"><h2>To'g'ri javoblar</h2>${rows}</div><button class="btn sec" id="xb" type="button">Testlar ro'yxatiga qaytish</button>`);
   $("xb").onclick = () => go("tests");
   if($("xkey")) $("xkey").onclick = () => { if(tg.openLink) tg.openLink(keyPdf); else window.open(keyPdf, "_blank"); };
   if($("ebtn")) $("ebtn").onclick = async () => {
