@@ -7,7 +7,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="regions.js"></script>
 <style>
-:root{--bg:#0b1020;--card:#131a30;--card2:#1f2a55;--line:#243050;--line2:#3a4a86;--text:#eef1ff;--muted:#8d97b8;--violet:#7c5cff;--mint:#2ee6a6;--danger:#ff6b81;--soft:#2b3770}
+:root{--bg:#0b1020;--card:#131a30;--card2:#1f2a55;--line:#243050;--line2:#3a4a86;--text:#eef1ff;--muted:#8d97b8;--violet:#7c5cff;--mint:#2ee6a6;--danger:#ff6b81;--soft:#2b3770;--ibg:#2b3770;--ifg:#cfd9ff}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;background:radial-gradient(900px 500px at 80% -10%,#2a1f6b55,transparent),var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
 .wrap{max-width:520px;margin:0 auto;padding:14px 16px 100px}
@@ -73,7 +73,7 @@ select:disabled{opacity:.5}
 .codebar input{border:0;padding:10px 4px;background:none;flex:1;min-width:0}
 .codebar button{border:0;background:linear-gradient(135deg,var(--violet),var(--mint));color:#0b1020;font-weight:800;font-size:15px;padding:13px 20px;border-radius:16px}
 .t{cursor:pointer;background:var(--card2);border:1.5px solid var(--line2);border-radius:24px;padding:16px;margin-bottom:12px}
-.pdfdl{display:flex;align-items:center;gap:12px;margin-top:10px;padding:10px 12px;border:1.5px dashed var(--line2);border-radius:16px;color:inherit;text-decoration:none}.pdfdl .pdft{flex:1;display:flex;flex-direction:column}.pdfdl small{color:var(--muted)}.pdfdl .pdfa{width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,.08);display:grid;place-items:center}
+.pdfdl{display:flex;align-items:center;gap:12px;margin-top:12px;padding:12px;border:1.5px dashed var(--line2);border-radius:18px;color:inherit;text-decoration:none}.pdfdl .pdft{flex:1;display:flex;flex-direction:column;gap:2px}.pdfdl .pdft b{font-size:17px}.pdfdl small{color:var(--muted);font-size:14px}.pdfdl .pdfi{flex:none;width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#3b5bdb,#5a8cff);color:#fff;display:grid;place-items:center}.pdfdl .pdfa{flex:none;width:44px;height:44px;border-radius:14px;background:var(--ibg);color:var(--ifg);display:grid;place-items:center}
 .th{display:flex;align-items:center;gap:14px}
 .ti{width:60px;height:60px;flex:none;border-radius:18px;display:grid;place-items:center;font-size:28px;color:#fff;background:linear-gradient(135deg,var(--violet),#5a8cff)}
 .tm{flex:1;min-width:0}
@@ -294,7 +294,7 @@ function renderTests(){
       <div class="tm"><b>${esc(t.title)}</b><small>${esc(t.subject)} · ${t.question_count} savol · ⏳ ${t.duration_minutes} daq</small></div>
       ${tagOf(t)}</div>
     <button class="btn yel" type="button">Testni boshlash</button>
-    ${t.pdf_url ? `<a class="pdfdl" href="${esc(t.pdf_url)}"><span>📄</span><span class="pdft"><b>Savollar PDF</b><small>Yuklab olish</small></span><span class="pdfa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M6 11l6 6 6-6M5 20h14"/></svg></span></a>` : t.pdf_locked ? `<a class="pdfdl" href="#" data-lock="1"><span>🔒</span><span class="pdft"><b>Savollar PDF</b><small>Sotib olgach ochiladi</small></span></a>` : ""}</div>`).join("");
+    ${t.pdf_url ? `<a class="pdfdl" href="${esc(t.pdf_url)}"><span class="pdfi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg></span><span class="pdft"><b>Savollar PDF</b><small>Yuklab olish</small></span><span class="pdfa"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M6 11l6 6 6-6M5 20h14"/></svg></span></a>` : t.pdf_locked ? `<a class="pdfdl" href="#" data-lock="1"><span class="pdfi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span><span class="pdft"><b>Savollar PDF</b><small>Sotib olgach ochiladi</small></span></a>` : ""}</div>`).join("");
 }
 async function loadTests(){
   renderChips();
