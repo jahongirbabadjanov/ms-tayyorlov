@@ -49,10 +49,10 @@ const css = `
 document.head.insertAdjacentHTML("beforeend", "<style>" + css + "</style>");
 $("app").insertAdjacentHTML("beforeend", '<section id="v-exam" class="hidden"></section>');
 
-let timer = null, CUR = null, D = null, sending = false, PREV = "tests";
+let timer = null, CUR = null, D = null, sending = false, PREV = "tests", RT = false, LASTKEY = "";
 const BACK = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>';
 const stopTimer = () => { if(timer){ clearInterval(timer); timer = null; } };
-const dk = c => "draft_" + c;
+const dk = c => (RT ? "rdraft_" : "draft_") + c;
 const saveDraft = () => { try{ localStorage.setItem(dk(CUR.test.code), JSON.stringify(D)); }catch(e){} };
 const loadDraft = c => { try{ return JSON.parse(localStorage.getItem(dk(c))); }catch(e){ return null; } };
 const clearDraft = c => { try{ localStorage.removeItem(dk(c)); }catch(e){} };
@@ -170,6 +170,7 @@ $("tlist").addEventListener("click", e => {
 $("codego").onclick = () => { const c = $("codein").value.trim(); if(c) openTest(c); };
 
 async function openTest(code){
+  RT = false;
   showExam();
   box('<div class="card"><p class="sub" style="margin:0">Yuklanmoqda...</p></div>');
   try{
@@ -302,8 +303,9 @@ function send(auto){
     sending = true; stopTimer();
     if($("xsend")) $("xsend").disabled = true;
     try{
-      const res = await call("/api/tests/submit", {code: t.code, closed: D.closed, open_a: D.open});
-      clearDraft(t.code); sending = false; openTest(t.code);
+      const res = await call(RT ? "/api/tests/retake_submit" : "/api/tests/submit", {code: t.code, closed: D.closed, open_a: D.open});
+      clearDraft(t.code); sending = false;
+      if(RT){ RT = false; renderResult(t, res.result, LASTKEY); } else openTest(t.code);
     }catch(e){
       sending = false;
       if(String(e.message).includes("409")){ openTest(t.code); return; }
@@ -402,11 +404,12 @@ function renderSolutions(t, R, keyPdf, sel){
   $("xsolv").onclick = () => renderPdfView(t, R, keyPdf, "k", sel);
   $("xall").onclick = () => renderPdfView(t, R, keyPdf, "k", 0);
   $("xq").onclick = () => renderPdfView(t, R, keyPdf, "q", sel);
-  $("xre").onclick = () => toast("Qayta ishlash tez orada qo'shiladi.");
+  $("xre").onclick = () => startRetake(t, keyPdf);
 }
 
 function renderResult(t, R, keyPdf){
   stopTimer(); showExam();
+  LASTKEY = keyPdf;
   const cm = x => String(x).replace(".", ",");
   const nm = R.lang ? "Yozma ish bahosi (0-24)" : R.extra === "written" ? "Yozma ish ball (0-75)" : "Esse ball (0-75)";
   const tm = R.elapsed == null ? "—" : fmt(R.elapsed);
@@ -437,27 +440,30 @@ function renderResult(t, R, keyPdf){
     }
     if(R.next && R.next.need != null) card += `<div class="rhint">${R.next.level} daraja uchun yana ${R.next.need} ta to'g'ri javob kerak</div>`;
     if(R.otm) card += `<div class="rline">OTM bali: 1-fan ${cm(R.otm.b1)} · 2-fan ${cm(R.otm.b2)}</div>`;
-    card += `<div class="rnote">Ball Rasch modeli bo'yicha, shu testni birinchi marta ishlagan ${R.participants} ishtirokchi natijasiga ko'ra hisoblanadi va ishtirokchilar qo'shilgani sari yangilanadi.</div>`;
+    if(!R.retake) card += `<div class="rnote">Ball Rasch modeli bo'yicha, shu testni birinchi marta ishlagan ${R.participants} ishtirokchi natijasiga ko'ra hisoblanadi va ishtirokchilar qo'shilgani sari yangilanadi.</div>`;
   }
   card += `</div>`;
-  const tiles = `<div class="rtiles">` +
+  const tiles = R.retake ? (`<div class="rtiles">` + tile("xt-sol", '<path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/>', "Yechimlar", "Savollar katagi") + tile("xt-off", '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', "Rasmiy natija", "Asosiy natijaga qaytish") + `</div>`) : `<div class="rtiles">` +
     tile("xt-cert", '<circle cx="12" cy="9" r="6"/><path d="M8.5 14.5 7 22l5-3 5 3-1.5-7.5"/>', "Sertifikat", "Ma'lumotlar va rasm") +
     tile("xt-sol", '<path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/>', "Yechimlar", "Savollar katagi") +
     tile("xt-an", '<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>', "Natija tahlili", "Statistika") +
     tile("xt-all", '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/>', "Umumiy natijalar", "Reyting jadvali") + `</div>`;
   const keyBtn = keyPdf ? `<button class="btn yel" id="xkey" type="button" style="margin-top:0;margin-bottom:14px">Yechimlar PDF</button>` : "";
   box(`<div class="rh"><button id="xback" type="button" class="ibtn" aria-label="Orqaga">${BACK}</button><div><b>${esc(t.subject)} · ${esc(t.title)}</b><small>Natija</small></div></div>` +
-    card + tiles + keyBtn +
-    `<button class="btn" id="xshare" type="button" style="background:#0f1a4d;color:#fff;box-shadow:none">Ulashish</button>`);
-  $("xback").onclick = () => go(PREV);
-  $("xt-cert").onclick = () => {
+    (R.retake ? `<div class="rhint" style="margin-top:0;margin-bottom:14px">Qayta ishlash natijasi. Rasmiy ballingiz, reyting va sertifikatga ta'sir qilmaydi.</div>` : "") + card + tiles + keyBtn +
+    `<button class="btn sec" id="xre2" type="button" style="margin-top:0;margin-bottom:10px">Qayta ishlash</button>` +
+    (R.retake ? "" : `<button class="btn" id="xshare" type="button" style="background:#0f1a4d;color:#fff;box-shadow:none">Ulashish</button>`));
+  $("xback").onclick = () => { if(R.retake) openTest(t.code); else go(PREV); };
+  $("xre2").onclick = () => startRetake(t, keyPdf);
+  if($("xt-off")) $("xt-off").onclick = () => openTest(t.code);
+  if($("xt-cert")) $("xt-cert").onclick = () => {
     if(R.pending || !R.level){ toast(R.pending ? "Ball hisoblangach sertifikat olish mumkin bo'ladi." : "Sertifikat daraja (C dan yuqori) olganlar uchun beriladi."); return; }
     renderCert(t, R, keyPdf);
   };
-  $("xt-an").onclick = () => toast("Natija tahlili tez orada qo'shiladi.");
-  $("xt-all").onclick = () => toast("Umumiy natijalar tez orada qo'shiladi.");
+  if($("xt-an")) $("xt-an").onclick = () => toast("Natija tahlili tez orada qo'shiladi.");
+  if($("xt-all")) $("xt-all").onclick = () => toast("Umumiy natijalar tez orada qo'shiladi.");
   $("xt-sol").onclick = () => renderSolutions(t, R, keyPdf, 0);
-  $("xshare").onclick = async () => {
+  if($("xshare")) $("xshare").onclick = async () => {
     try{
       const w = await call("/api/wallet", {});
       const txt = R.pending ? `MS Tayyorlov: ${t.subject} testida ${R.raw}/${R.total} to'g'ri javob berdim!` : `MS Tayyorlov: ${t.subject} testidan ${cm(shown)} ball${R.level ? " (" + R.level + ")" : ""} oldim!`;
@@ -575,5 +581,16 @@ function renderEssay(t, R, keyPdf){
     }catch(e){ $("eerr").textContent = "Xatolik. Qayta urinib ko'ring."; $("ebtn").disabled = false; }
   };
 }
+async function startRetake(t, keyPdf){
+  const go2 = async () => {
+    try{
+      const r = await call("/api/tests/retake_start", {code: t.code});
+      LASTKEY = keyPdf; RT = true;
+      renderSheet({test: t, elapsed: r.elapsed});
+    }catch(e){ toast("Boshlab bo'lmadi. Qayta urinib ko'ring."); }
+  };
+  const msg = "Qayta ishlash: natija rasmiy ballingizga, reytingga va sertifikatga ta'sir qilmaydi. Boshlaymizmi?";
+  if(tg.showConfirm) tg.showConfirm(msg, ok => { if(ok) go2(); }); else go2();
+}
 })();
-    
+  
