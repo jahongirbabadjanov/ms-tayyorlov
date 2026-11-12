@@ -254,18 +254,30 @@ function send(auto){
 function renderResult(t, R, keyPdf){
   stopTimer(); showExam();
   const lvl = R.level ? `<span class="lvl">${R.level}</span>` : `<span class="sub">Daraja berilmadi (46 balldan past)</span>`;
-  const nm = R.extra === "written" ? "Yozma ish ball" : "Esse ball";
-  let top = `<div class="card center"><h2>MS test natijalar</h2><p class="sub">${esc(t.title)} · ${esc(t.subject)}</p>
-    <div class="big">${R.score}</div>
-    <p class="sub">Test bali (90 dan) · ${R.method === "rasch" ? "Rasch modeli" : "oddiy hisob"}</p>`;
-  if(R.extra){
-    if(R.extra_ball == null){
-      top += `<label style="text-align:left">${nm} (0-75)</label><input id="eball" type="number" inputmode="decimal" placeholder="Masalan: 58"><div class="err" id="eerr"></div><button class="btn" id="ebtn" type="button">Umumiy ballni hisoblash</button>`;
-    }else{
-      top += `<div class="kv"><span>${nm}</span><span>${R.extra_ball}</span></div><p class="sub">(${R.extra_ball} + ${R.score}) / 2 = ${R.final}</p><div style="margin-top:8px">${lvl}</div>`;
-    }
-  }else top += `<div style="margin-top:8px">${lvl}</div>`;
-  if(R.method !== "rasch") top += `<p class="sub" style="margin-top:12px">Ball hozircha oddiy hisoblangan. Testda 30 ta ishtirokchi to'planganda Rasch modeli ishga tushadi va ballingiz yangilanishi mumkin.</p>`;
+  const nm = R.lang ? "Yozma ish bahosi (0-24)" : R.extra === "written" ? "Yozma ish ball (0-75)" : "Esse ball (0-75)";
+  const cm = x => String(x).replace(".", ",");
+  const tm = R.elapsed == null ? "—" : fmt(R.elapsed);
+  let top = `<div class="card center"><h2>MS test natijalar</h2><p class="sub">${esc(t.title)} · ${esc(t.subject)}</p>`;
+  if(R.pending){
+    top += `<div class="big">${R.raw}/${R.total}</div><p class="sub">to'g'ri javoblar</p><p class="sub" style="margin-top:10px"><b>Ball hisoblanmoqda</b><br>Ball Rasch modeli bo'yicha kamida ${R.min_n} ishtirokchi to'planganda chiqadi (hozir ${R.participants} ta).</p>`;
+  }else{
+    const shown = R.final != null ? R.final : R.test_ball;
+    top += `<div class="big">${cm(shown)}</div><p class="sub">${R.final != null ? "Umumiy ball (75 dan)" : "Test bali (75 dan)"}</p>`;
+    top += `<div class="kv"><span>To'g'ri javoblar</span><span>${R.raw} / ${R.total}</span></div>`;
+    if(R.pct != null) top += `<div class="kv"><span>Foiz</span><span>${cm(R.pct)}%</span></div>`;
+    if(R.rank) top += `<div class="kv"><span>O'rin</span><span>${R.rank} / ${R.of}</span></div>`;
+    top += `<div class="kv"><span>Sarflangan vaqt</span><span>${tm}</span></div>`;
+    if(R.otm) top += `<div class="kv"><span>OTM bali (1-fan / 2-fan)</span><span>${cm(R.otm.b1)} / ${cm(R.otm.b2)}</span></div>`;
+    if(R.extra){
+      if(R.extra_ball == null){
+        top += `<label style="text-align:left">${nm}</label><input id="eball" type="text" inputmode="decimal" placeholder="${R.lang ? "Masalan: 18,5" : "Masalan: 58"}"><div class="err" id="eerr"></div><button class="btn" id="ebtn" type="button">Umumiy ballni hisoblash</button>`;
+      }else{
+        top += `<div class="kv"><span>${nm.split(" (")[0]}</span><span>${R.lang && R.essay_raw != null ? cm(R.essay_raw) + " → " + cm(R.extra_ball) : cm(R.extra_ball)}</span></div><p class="sub">(${cm(R.extra_ball)} + ${cm(R.test_ball)}) / 2 = ${cm(R.final)}</p><div style="margin-top:8px">${lvl}</div>`;
+      }
+    }else top += `<div style="margin-top:8px">${lvl}</div>`;
+    if(R.next && R.next.need != null) top += `<p class="sub" style="margin-top:10px">${R.next.level} daraja uchun yana ${R.next.need} ta to'g'ri javob kerak</p>`;
+    top += `<p class="sub" style="margin-top:12px">Ball Rasch modeli bo'yicha, shu testni birinchi marta ishlagan ${R.participants} ishtirokchi natijasiga ko'ra hisoblanadi va ishtirokchilar qo'shilgani sari yangilanadi.</p>`;
+  }
   top += "</div>";
 
   let rows = `<div class="rrow h"><span>№</span><span>Sizniki</span><span>To'g'ri</span></div>`, idx = 0;
@@ -282,8 +294,10 @@ function renderResult(t, R, keyPdf){
   $("xb").onclick = () => go(PREV);
   if($("xkey")) $("xkey").onclick = () => { if(tg.openLink) tg.openLink(keyPdf); else window.open(keyPdf, "_blank"); };
   if($("ebtn")) $("ebtn").onclick = async () => {
-    const v = parseFloat($("eball").value);
-    if(!(v >= 0 && v <= 75)){ $("eerr").textContent = "0 dan 75 gacha son kiriting"; return; }
+    const v = parseFloat(String($("eball").value).replace(",", "."));
+    if(R.lang){
+      if(!(v >= 0 && v <= 24 && Math.abs(v * 2 - Math.round(v * 2)) < 1e-9)){ $("eerr").textContent = "0 dan 24 gacha, 0,5 qadam bilan kiriting"; return; }
+    }else if(!(v >= 0 && v <= 75)){ $("eerr").textContent = "0 dan 75 gacha son kiriting"; return; }
     try{ const r = await call("/api/tests/essay", {code: t.code, ball: v}); renderResult(t, r.result, keyPdf); }
     catch(e){ $("eerr").textContent = "Xatolik. Qayta urinib ko'ring."; }
   };
