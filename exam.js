@@ -28,6 +28,22 @@ const css = `
 .rtile{border-radius:20px;border:1.5px solid var(--line);background:var(--card);padding:14px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;text-align:left;color:var(--text);font:inherit;cursor:pointer}
 .rtile b{font-size:16px}.rtile small{margin-top:-6px;font-size:12px;color:var(--muted)}
 .rti{width:44px;height:44px;border-radius:14px;background:var(--soft);color:var(--violet);display:grid;place-items:center}
+.qlg{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;font-size:14px;font-weight:600;margin-bottom:12px}
+.qlg span{display:flex;align-items:center;gap:8px}.qlg i{width:18px;height:18px;border-radius:6px;border:1.5px solid;display:inline-block}
+.qg{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;padding:6px;margin-bottom:12px}
+.qc{height:46px;border-radius:12px;border:1.5px solid;font:700 16px system-ui,sans-serif;cursor:pointer;padding:0}
+.qc.ok,.qlg i.ok{background:#dff5e8;color:#14703d;border-color:#22b866}
+.qc.bad,.qlg i.bad{background:#fde4e5;color:#b3262b;border-color:#e5484d}
+.qc.part,.qlg i.part{background:#fff1cc;color:#8a5a00;border-color:#f5a524}
+.qc.none,.qlg i.none{background:#eef0f8;color:#5b6385;border-color:#c9cfe3}
+.qc.sel{box-shadow:0 0 0 2px var(--bg),0 0 0 5px #ffc629}
+.qd{border-radius:22px;padding:18px;background:var(--card);border:1.5px solid var(--line);box-shadow:0 10px 28px rgba(36,64,214,.08);margin-bottom:12px}
+.qd .qh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.qd .qh b{font-size:20px}
+.qd .qb{padding:5px 12px;border-radius:10px;font-size:13px;font-weight:700}
+.qd .qr{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:34px;font-size:15px}.qd .qr span{color:var(--muted);font-weight:500}.qd .qr strong{font-size:18px;font-weight:800}
+.qd .qr strong.g{color:#14703d}.qd .qr strong.r{color:#b3262b}
+.qbtn{display:flex;gap:10px;margin-top:12px}.qbtn button{flex:1;height:52px;border:0;border-radius:14px;font:700 15px system-ui,sans-serif;cursor:pointer}
+.qbtn .p{background:var(--violet);color:#fff}.qbtn .s{background:var(--soft);color:var(--violet)}
 .pdfbox{height:70vh;overflow:auto;background:var(--soft);border-radius:12px;padding:4px;-webkit-overflow-scrolling:touch}
 `;
 document.head.insertAdjacentHTML("beforeend", "<style>" + css + "</style>");
@@ -268,6 +284,51 @@ function send(auto){
   else go2();
 }
 
+function renderSolutions(t, R, keyPdf, sel){
+  const qs = R.qs || [];
+  const cnt = {ok: 0, bad: 0, part: 0, none: 0};
+  qs.forEach(x => { cnt[x]++; });
+  if(!sel){ const f = qs.findIndex(x => x !== "ok"); sel = f < 0 ? 1 : f + 1; }
+  const names = {ok: "To'g'ri", bad: "Xato", part: "Qisman", none: "Javobsiz"};
+  const grid = () => qs.map((x, i) => `<button class="qc ${x}${i + 1 === sel ? " sel" : ""}" type="button" data-n="${i + 1}">${i + 1}</button>`).join("");
+  const card = () => {
+    const st = qs[sel - 1], nC = R.key.closed.length;
+    let rows = "";
+    const ro = (l, v, cls) => `<div class="qr"><span>${l}</span>${v ? `<strong class="${cls}">${esc(v)}</strong>` : '<em style="font-style:normal;padding:5px 12px;border-radius:10px;background:#eef0f8;color:#5b6385;font-size:14px;font-weight:600">javobsiz</em>'}</div>`;
+    if(sel <= nC){
+      const mine = ((R.my.closed[sel - 1] || "") + "").toUpperCase(), right = R.key.closed[sel - 1].toUpperCase();
+      rows = ro("Sizning javobingiz", mine, st === "ok" ? "g" : "r") + ro("To'g'ri javob", right, "");
+    }else{
+      const qi = sel - nC - 1, parts = R.key.open[qi], my = R.my.open[qi] || [];
+      parts.forEach((p, pi) => {
+        const l = "abcdef"[pi] + ")", m = (my[pi] || "").trim();
+        rows += ro(l + " sizniki", m, norm(m) === norm(p) ? "g" : "r") + ro(l + " to'g'ri", p, "");
+      });
+    }
+    const bc = {ok: "background:#dff5e8;color:#14703d", bad: "background:#fde4e5;color:#b3262b", part: "background:#fff1cc;color:#8a5a00", none: "background:#eef0f8;color:#5b6385"}[st];
+    return `<div class="qh"><b>${sel}-savol</b><span class="qb" style="${bc}">${names[st]}</span></div>${rows}`;
+  };
+  const norm = x => String(x).trim().toLowerCase().replace(/ /g, "").replace(/,/g, ".");
+  box(`<div class="rh"><button id="xback" type="button" class="ibtn" aria-label="Orqaga">${BACK}</button><div><b>${esc(t.subject)} · ${esc(t.title)}</b><small>Yechimlar · ${qs.length} ta savol</small></div></div>` +
+    `<div class="qlg"><span><i class="ok"></i>to'g'ri · ${cnt.ok}</span><span><i class="bad"></i>xato · ${cnt.bad}</span><span><i class="part"></i>qisman · ${cnt.part}</span><span><i class="none"></i>javobsiz · ${cnt.none}</span></div>` +
+    `<p class="sub">Savolni bosing: javob va yechim chiqadi</p><div class="qg" id="xg">${grid()}</div>` +
+    `<div class="qd" id="xc">${card()}<div class="qbtn"><button class="p" id="xsolv" type="button">Yechimini ko'rish</button><button class="s" id="xq" type="button">Savolni ko'rish</button></div></div>` +
+    `<div class="qbtn" style="margin-top:0"><button class="p" id="xall" type="button" style="background:#ffc629;color:#0f1a4d">Barcha yechimlar</button><button class="s" id="xre" type="button" style="background:#fff;color:#0f1a4d;border:1.5px solid #0f1a4d">Qayta ishlash</button></div>`);
+  $("xback").onclick = () => renderResult(t, R, keyPdf);
+  $("xg").onclick = e => {
+    const b = e.target.closest(".qc"); if(!b) return;
+    sel = +b.dataset.n;
+    $("xg").innerHTML = grid();
+    const c = $("xc"), bt = c.querySelector(".qbtn");
+    c.innerHTML = card(); c.appendChild(bt);
+  };
+  const openKey = () => { if(!keyPdf){ toast("Yechimlar PDF hali yuklanmagan."); return; } if(tg.openLink) tg.openLink(keyPdf); else window.open(keyPdf, "_blank"); };
+  $("xsolv").onclick = openKey;
+  $("xall").onclick = openKey;
+  $("xq").onclick = () => toast("Savolni PDF'da ko'rish tez orada qo'shiladi.");
+  $("xre").onclick = () => toast("Qayta ishlash tez orada qo'shiladi.");
+}
+
 function renderResult(t, R, keyPdf){
   stopTimer(); showExam();
   const cm = x => String(x).replace(".", ",");
@@ -303,7 +364,7 @@ function renderResult(t, R, keyPdf){
   card += `</div>`;
   const tiles = `<div class="rtiles">` +
     tile("xt-cert", '<circle cx="12" cy="9" r="6"/><path d="M8.5 14.5 7 22l5-3 5 3-1.5-7.5"/>', "Sertifikat", "Ma'lumotlar va rasm") +
-    tile("xt-sol", '<path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/>', "Yechimlar", "To'g'ri javoblar") +
+    tile("xt-sol", '<path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/>', "Yechimlar", "Savollar katagi") +
     tile("xt-an", '<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>', "Natija tahlili", "Statistika") +
     tile("xt-all", '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/>', "Umumiy natijalar", "Reyting jadvali") + `</div>`;
   let rows = `<div class="rrow h"><span>№</span><span>Sizniki</span><span>To'g'ri</span></div>`, idx = 0;
@@ -313,7 +374,7 @@ function renderResult(t, R, keyPdf){
   });
   R.key.open.forEach((parts, qi) => parts.forEach((p, pi) => {
     const ok = R.ok[idx++], my = (R.my.open[qi] && R.my.open[qi][pi]) || "-";
-   rows += `<div class="rrow"><span>${36 + qi}.${pi + 1}</span><span class="${ok ? "good" : "bad"}">${ok ? "✔" : "✖"} ${esc(my)}</span><span>${esc(p)}</span></div>`;
+    rows += `<div class="rrow"><span>${36 + qi}.${pi + 1}</span><span class="${ok ? "good" : "bad"}">${ok ? "✔" : "✖"} ${esc(my)}</span><span>${esc(p)}</span></div>`;
   }));
   const keyBtn = keyPdf ? `<button class="btn yel" id="xkey" type="button" style="margin-top:0;margin-bottom:14px">Yechimlar PDF</button>` : "";
   box(`<div class="rh"><button id="xback" type="button" class="ibtn" aria-label="Orqaga">${BACK}</button><div><b>${esc(t.subject)} · ${esc(t.title)}</b><small>Natija</small></div></div>` +
@@ -323,7 +384,7 @@ function renderResult(t, R, keyPdf){
   $("xt-cert").onclick = () => toast("Sertifikat bo'limi tez orada qo'shiladi.");
   $("xt-an").onclick = () => toast("Natija tahlili tez orada qo'shiladi.");
   $("xt-all").onclick = () => toast("Umumiy natijalar tez orada qo'shiladi.");
-  $("xt-sol").onclick = () => { $("xrows").scrollIntoView({behavior: "smooth", block: "start"}); };
+  $("xt-sol").onclick = () => renderSolutions(t, R, keyPdf, 0);
   $("xshare").onclick = async () => {
     try{
       const w = await call("/api/wallet", {});
