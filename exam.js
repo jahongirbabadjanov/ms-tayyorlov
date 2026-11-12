@@ -174,11 +174,13 @@ async function openTest(code){
   box('<div class="card"><p class="sub" style="margin:0">Yuklanmoqda...</p></div>');
   try{
     const r = await call("/api/tests/get", {code});
+    const fresh = !!(CUR && CUR.state === "started");
     CUR = r;
     if(r.state === "new"){
       try{ const m = await call("/api/me", {}); ME = m.user; }catch(e){}
       renderNew(r);
     }else if(r.state === "started") renderSheet(r);
+    else if(fresh && r.result.extra && r.result.extra_ball == null) renderEssay(r.test, r.result, r.key_pdf_url);
     else renderResult(r.test, r.result, r.key_pdf_url);
   }catch(e){
     box('<div class="card"><p class="sub">Test topilmadi yoki xatolik chiqdi.</p><button class="btn sec" id="xb" type="button">Orqaga</button></div>');
@@ -408,7 +410,7 @@ function renderResult(t, R, keyPdf){
   const cm = x => String(x).replace(".", ",");
   const nm = R.lang ? "Yozma ish bahosi (0-24)" : R.extra === "written" ? "Yozma ish ball (0-75)" : "Esse ball (0-75)";
   const tm = R.elapsed == null ? "—" : fmt(R.elapsed);
-  const waitE = !R.pending && R.extra && R.extra_ball == null;
+  const waitE = R.extra && R.extra_ball == null;
   const shown = R.pending ? null : (R.final != null ? R.final : R.test_ball);
   const closedOk = (R.ok || []).slice(0, 35).reduce((x, y) => x + y, 0);
   const openOk = R.raw - closedOk, openAll = R.total - 35;
@@ -425,9 +427,11 @@ function renderResult(t, R, keyPdf){
   card += `<div class="rline">Yopiq ${closedOk}/35 · Ochiq ${openOk}/${openAll}</div>`;
   if(R.pending){
     card += `<div class="rhint">Ball Rasch modeli bo'yicha kamida ${R.min_n} ishtirokchi to'planganda chiqadi (hozir ${R.participants} ta). To'g'ri javoblar soni darrov ko'rinadi.</div>`;
-  }else{
+    if(R.extra && R.extra_ball != null) card += `<div class="rline">${nm.split(" (")[0]}: ${R.lang && R.essay_raw != null ? cm(R.essay_raw) + " → " + cm(R.extra_ball) : cm(R.extra_ball)} (kiritildi). Umumiy ball test balli hisoblangach chiqadi.</div>`;
+  }
+  if(waitE) card += `<div class="rhint">Yozma ish bali hali kiritilmagan. Umumiy ball shundan keyin chiqadi.</div><button class="btn" id="eopen" type="button">Yozma ish ballini kiritish</button>`;
+  if(!R.pending){
     if(waitE){
-      card += `<label style="margin-top:14px">${nm}</label><input id="eball" type="text" inputmode="decimal" placeholder="${R.lang ? "Masalan: 18,5" : "Masalan: 58"}"><div class="err" id="eerr"></div><button class="btn" id="ebtn" type="button">Umumiy ballni hisoblash</button>`;
     }else if(R.extra){
       card += `<div class="rline">${nm.split(" (")[0]}: ${R.lang && R.essay_raw != null ? cm(R.essay_raw) + " → " + cm(R.extra_ball) : cm(R.extra_ball)} · (${cm(R.extra_ball)} + ${cm(R.test_ball)}) / 2 = ${cm(R.final)}</div>`;
     }
@@ -462,14 +466,7 @@ function renderResult(t, R, keyPdf){
     }catch(e){ toast("Ulashib bo'lmadi. Qayta urinib ko'ring."); }
   };
   if($("xkey")) $("xkey").onclick = () => renderPdfView(t, R, keyPdf, "k", 0);
-  if($("ebtn")) $("ebtn").onclick = async () => {
-    const v = parseFloat(String($("eball").value).replace(",", "."));
-    if(R.lang){
-      if(!(v >= 0 && v <= 24 && Math.abs(v * 2 - Math.round(v * 2)) < 1e-9)){ $("eerr").textContent = "0 dan 24 gacha, 0,5 qadam bilan kiriting"; return; }
-    }else if(!(v >= 0 && v <= 75)){ $("eerr").textContent = "0 dan 75 gacha son kiriting"; return; }
-    try{ const r = await call("/api/tests/essay", {code: t.code, ball: v}); renderResult(t, r.result, keyPdf); }
-    catch(e){ $("eerr").textContent = "Xatolik. Qayta urinib ko'ring."; }
-  };
+  if($("eopen")) $("eopen").onclick = () => renderEssay(t, R, keyPdf);
 }
 async function renderCert(t, R, keyPdf){
   stopTimer(); showExam();
@@ -534,4 +531,49 @@ async function renderCert(t, R, keyPdf){
     $("cget").disabled = false; $("cget").textContent = "Sertifikatni olish";
   };
 }
+function renderEssay(t, R, keyPdf){
+  stopTimer(); showExam();
+  const cm = x => String(x).replace(".", ",");
+  const nm = R.lang ? "Yozma ish bahosi (0-24)" : "Yozma ish ball (0-75)";
+  const nT = R.extra === "essay" ? 1 : (t.written || 1);
+  const rates = Array(nT).fill("");
+  const sg = (i, v, l) => `<button type="button" class="rt" data-i="${i}" data-v="${v}" style="flex:1;height:44px;border-radius:12px;border:1.5px solid var(--line2);background:#fff;color:var(--text);font:700 14px system-ui,sans-serif;cursor:pointer">${l}</button>`;
+  let rows = "";
+  for(let i = 0; i < nT; i++) rows += `<div style="margin-top:12px"><div style="font-size:14px;font-weight:700;margin-bottom:6px">${nT === 1 ? (R.lang ? "Esse" : "Yozma ish") : (i + 1) + "-yozma topshiriq"}</div><div style="display:flex;gap:8px">${sg(i, "f", "To'liq")}${sg(i, "p", "Qisman")}${sg(i, "z", "0 ball")}</div></div>`;
+  box(`<div class="rh"><button id="xback" type="button" class="ibtn" aria-label="Orqaga">${BACK}</button><div><b>Yozma ish</b><small>${esc(t.subject)} · ${esc(t.title)}</small></div></div>` +
+    `<div class="rcd"><label style="display:block;margin-bottom:6px">${nm}</label><input id="eball" type="text" inputmode="decimal" placeholder="${R.lang ? "Masalan: 18,5" : "Masalan: 58"}"></div>` +
+    `<div class="rcd"><div style="font-size:16px;font-weight:800">Yozma ishni qanday bajardingiz?</div>` +
+    `<div class="rnote" style="margin-top:8px"><b>To'liq</b> — hammasini ishladim, yechim va javoblarim Yechimlar PDF dagi bilan bir xil, aniq natija chiqdi.<br><b>Qisman</b> — usul yoki yo'nalish to'g'ri, lekin hisobda xato bor yoki oxirigacha yetkazmadim.<br><b>0 ball</b> — ishlamadim yoki yechimim noto'g'ri.</div>` + rows +
+    `<div class="rnote">Kiritgan ballingiz belgilangan baholarga mos kelmasa, bot uni mos ballga o'zgartiradi.</div></div>` +
+    `<div class="err" id="eerr"></div><button class="btn" id="ebtn" type="button">Saqlash va natijani ko'rish</button>` +
+    `<button class="btn sec" id="eskip" type="button">Keyinroq kiritaman</button>`);
+  $("xback").onclick = () => renderResult(t, R, keyPdf);
+  $("eskip").onclick = () => renderResult(t, R, keyPdf);
+  document.querySelectorAll(".rt").forEach(b => {
+    b.onclick = () => {
+      rates[+b.dataset.i] = b.dataset.v;
+      document.querySelectorAll('.rt[data-i="' + b.dataset.i + '"]').forEach(x => {
+        const on = x === b;
+        x.style.background = on ? "#2440d6" : "#fff"; x.style.color = on ? "#fff" : "var(--text)"; x.style.borderColor = on ? "#2440d6" : "var(--line2)";
+      });
+    };
+  });
+  $("ebtn").onclick = async () => {
+    const v = parseFloat(String($("eball").value).replace(",", "."));
+    if(R.lang){
+      if(!(v >= 0 && v <= 24 && Math.abs(v * 2 - Math.round(v * 2)) < 1e-9)){ $("eerr").textContent = "0 dan 24 gacha, 0,5 qadam bilan kiriting"; return; }
+    }else if(!(v >= 0 && v <= 75)){ $("eerr").textContent = "0 dan 75 gacha son kiriting"; return; }
+    if(rates.some(x => !x)){ $("eerr").textContent = "Har bir topshiriq uchun holatni belgilang."; return; }
+    $("ebtn").disabled = true;
+    try{
+      const r = await call("/api/tests/essay2", {code: t.code, ball: v, rates});
+      renderResult(t, r.result, keyPdf);
+      if(r.adjusted){
+        const msg = "Kiritgan ballingiz (" + cm(r.claim) + ") belgilangan baholarga mos kelmadi, shuning uchun " + cm(r.adj) + " ball hisoblandi.";
+        if(tg.showAlert) tg.showAlert(msg); else toast(msg);
+      }
+    }catch(e){ $("eerr").textContent = "Xatolik. Qayta urinib ko'ring."; $("ebtn").disabled = false; }
+  };
+}
 })();
+    
