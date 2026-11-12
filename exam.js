@@ -446,7 +446,10 @@ function renderResult(t, R, keyPdf){
     card + tiles + keyBtn +
     `<button class="btn" id="xshare" type="button" style="background:#0f1a4d;color:#fff;box-shadow:none">Ulashish</button>`);
   $("xback").onclick = () => go(PREV);
-  $("xt-cert").onclick = () => toast("Sertifikat bo'limi tez orada qo'shiladi.");
+  $("xt-cert").onclick = () => {
+    if(R.pending || !R.level){ toast(R.pending ? "Ball hisoblangach sertifikat olish mumkin bo'ladi." : "Sertifikat daraja (C dan yuqori) olganlar uchun beriladi."); return; }
+    renderCert(t, R, keyPdf);
+  };
   $("xt-an").onclick = () => toast("Natija tahlili tez orada qo'shiladi.");
   $("xt-all").onclick = () => toast("Umumiy natijalar tez orada qo'shiladi.");
   $("xt-sol").onclick = () => renderSolutions(t, R, keyPdf, 0);
@@ -468,5 +471,67 @@ function renderResult(t, R, keyPdf){
     catch(e){ $("eerr").textContent = "Xatolik. Qayta urinib ko'ring."; }
   };
 }
+async function renderCert(t, R, keyPdf){
+  stopTimer(); showExam();
+  let m = ME || {};
+  if(!m.first_name){ try{ const r = await call("/api/me", {}); m = r.user || {}; ME = m; }catch(e){} }
+  const cm = x => String(x).replace(".", ",");
+  let photo = "";
+  try{ photo = localStorage.getItem("cert_photo") || ""; }catch(e){}
+  const fs = "width:100%;height:50px;border-radius:14px;border:1.5px solid var(--line2);background:#fff;color:var(--text);padding:0 14px;font:600 16px system-ui,sans-serif;box-sizing:border-box";
+  const lb = "display:block;margin:12px 0 6px;font-size:13px;font-weight:700;color:var(--muted)";
+  box(`<div class="rh"><button id="xback" type="button" class="ibtn" aria-label="Orqaga">${BACK}</button><div><b>Sertifikat</b><small>${esc(t.subject)} · ${esc(t.title)}</small></div></div>` +
+    `<div class="rcd"><div class="rtop"><div class="rbadge">${esc(R.level)}</div><div class="rmid"><div class="rball"><b>${cm(R.final)}</b><span>/ 75</span></div><div class="rsub">${R.pct != null ? cm(R.pct) + "%" : ""}</div></div></div></div>` +
+    `<label style="${lb}">Familiya</label><input id="cl" type="text" value="${esc(m.last_name || "")}" style="${fs}">` +
+    `<label style="${lb}">Ism</label><input id="cf" type="text" value="${esc(m.first_name || "")}" style="${fs}">` +
+    `<label style="${lb}">Otasining ismi</label><input id="cm" type="text" value="${esc(m.middle_name || "")}" style="${fs}">` +
+    `<label style="${lb}">Rasm (ixtiyoriy)</label>` +
+    `<div style="display:flex;align-items:center;gap:12px"><div id="cpv" style="width:75px;height:100px;flex:none;border-radius:12px;border:1.5px dashed var(--line2);background:var(--soft);background-size:cover;background-position:center"></div>` +
+    `<div style="flex:1"><button id="cpick" type="button" style="width:100%;height:50px;border-radius:14px;border:1.5px solid var(--line2);background:#fff;color:var(--text);font:700 15px system-ui,sans-serif;cursor:pointer">Rasm tanlash</button><button id="cdel" type="button" style="width:100%;margin-top:8px;height:40px;border:0;background:none;color:var(--muted);font:600 14px system-ui,sans-serif;cursor:pointer">Rasmni olib tashlash</button></div></div>` +
+    `<input id="cfile" type="file" accept="image/*" style="display:none">` +
+    `<div class="err" id="cerr" style="margin-top:10px"></div>` +
+    `<button class="btn yel" id="cget" type="button" style="margin-top:14px">Sertifikatni olish</button>` +
+    `<div class="rnote">Sertifikat PDF ko'rinishida bot orqali yuboriladi. Bu MS Tayyorlov platformasidagi sinov testi natijasi, rasmiy Milliy sertifikat emas.</div>`);
+  const show = () => { $("cpv").style.backgroundImage = photo ? "url(" + photo + ")" : "none"; };
+  show();
+  $("xback").onclick = () => renderResult(t, R, keyPdf);
+  $("cpick").onclick = () => $("cfile").click();
+  $("cdel").onclick = () => { photo = ""; try{ localStorage.removeItem("cert_photo"); }catch(e){} show(); };
+  $("cfile").onchange = () => {
+    const f = $("cfile").files[0];
+    if(!f) return;
+    const rd = new FileReader();
+    rd.onload = () => {
+      const im = new Image();
+      im.onload = () => {
+        const k = Math.min(1, 700 / Math.max(im.width, im.height));
+        const cv = document.createElement("canvas");
+        cv.width = Math.max(1, Math.round(im.width * k)); cv.height = Math.max(1, Math.round(im.height * k));
+        const cx = cv.getContext("2d");
+        cx.drawImage(im, 0, 0, cv.width, cv.height);
+        cx.globalCompositeOperation = "destination-over";
+        cx.fillStyle = "#ffffff"; cx.fillRect(0, 0, cv.width, cv.height);
+        photo = cv.toDataURL("image/jpeg", 0.85);
+        try{ localStorage.setItem("cert_photo", photo); }catch(e){}
+        show();
+      };
+      im.onerror = () => { $("cerr").textContent = "Rasmni o'qib bo'lmadi. Boshqa rasm tanlang."; };
+      im.src = rd.result;
+    };
+    rd.readAsDataURL(f);
+  };
+  $("cget").onclick = async () => {
+    const a = $("cl").value.trim(), b = $("cf").value.trim(), c2 = $("cm").value.trim();
+    if(!a || !b){ $("cerr").textContent = "Familiya va ismni kiriting."; return; }
+    $("cerr").textContent = "";
+    $("cget").disabled = true; $("cget").textContent = "Tayyorlanmoqda...";
+    try{
+      await call("/api/tests/cert", {code: t.code, last: a, first: b, middle: c2, photo: photo ? photo.split(",")[1] : null});
+      toast("Sertifikat botga yuborildi.");
+    }catch(e){
+      $("cerr").textContent = "Yuborib bo'lmadi. Qayta urinib ko'ring.";
+    }
+    $("cget").disabled = false; $("cget").textContent = "Sertifikatni olish";
+  };
+}
 })();
-      
