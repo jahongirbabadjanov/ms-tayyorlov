@@ -2,10 +2,10 @@
 document.head.insertAdjacentHTML("beforeend", "<style>"
 + ".rc{cursor:pointer;background:var(--card2);border:1.5px solid var(--line2);border-radius:20px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}"
 + ".rc .rm{flex:1;min-width:0}.rc b{display:block;font-size:17px;line-height:1.2}"
-+ ".rc small{display:block;margin-top:4px;color:#aeb8e0;font-size:13px}"
++ ".rc small{display:block;margin-top:4px;color:var(--muted);font-size:13px}"
 + ".rs{text-align:right;flex:none}.rs strong{display:block;font-size:24px;color:var(--mint)}"
-+ ".rl{display:inline-block;margin-top:4px;padding:3px 10px;border-radius:99px;background:linear-gradient(135deg,var(--violet),var(--mint));color:#0b1020;font-weight:800;font-size:13px}"
-+ ".rw{display:inline-block;margin-top:4px;padding:3px 10px;border-radius:99px;background:#4a3f6e;color:#ffd36e;font-size:12px}"
++ ".rl{display:inline-block;margin-top:4px;padding:3px 10px;border-radius:99px;background:var(--violet);color:#fff;font-weight:800;font-size:13px}"
++ ".rw{display:inline-block;margin-top:4px;padding:3px 10px;border-radius:99px;background:#fff1cc;color:#8a5a00;font-size:12px}"
 + "</style>");
 $("v-answer").innerHTML = '<div class="card"><h2>Mening natijalarim</h2>'
  + '<input id="rsearch" placeholder="🔍 Test nomi yoki kod bo\'yicha..." style="margin-top:10px">'
