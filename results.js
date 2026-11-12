@@ -20,10 +20,11 @@ function draw(){
   if(!R.length){ $("rlist").innerHTML = '<div class="empty"><div>📊</div><b>Hali natija yo\'q</b>Test ishlang — natijalar shu yerda paydo bo\'ladi.</div>'; return; }
   if(!list.length){ $("rlist").innerHTML = '<div class="empty"><b>Hech narsa topilmadi</b></div>'; return; }
   $("rlist").innerHTML = list.map(r => {
-    const waiting = r.extra && r.extra_ball == null;
-    const big = waiting ? r.score : r.final;
-    const badge = r.level ? `<span class="rl">${esc(r.level)}</span>` : (waiting ? '<span class="rw">ball kutilmoqda</span>' : "");
-    return `<div class="rc" data-code="${esc(r.code)}"><div class="rm"><b>${esc(r.title)}</b><small>${esc(r.subject)} · ${dt(r.date)}</small></div>`
+    const waiting = !r.pending && r.extra && r.extra_ball == null;
+    const big = r.pending ? (r.raw + "/" + r.total) : waiting ? r.test_ball : r.final;
+    const badge = r.level ? `<span class="rl">${esc(r.level)}</span>` : (r.pending ? '<span class="rw">ball hisoblanmoqda</span>' : (waiting ? '<span class="rw">ball kutilmoqda</span>' : ""));
+    const cnt = r.pending ? "" : ` · ${r.raw}/${r.total}`;
+    return `<div class="rc" data-code="${esc(r.code)}"><div class="rm"><b>${esc(r.title)}</b><small>${esc(r.subject)} · ${dt(r.date)}${cnt}</small></div>`
       + `<div class="rs"><strong>${big}</strong>${badge}</div></div>`;
   }).join("");
 }
