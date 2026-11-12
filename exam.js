@@ -44,7 +44,7 @@ const css = `
 .qd .qr strong.g{color:#14703d}.qd .qr strong.r{color:#b3262b}
 .qbtn{display:flex;gap:10px;margin-top:12px}.qbtn button{flex:1;height:52px;border:0;border-radius:14px;font:700 15px system-ui,sans-serif;cursor:pointer}
 .qbtn .p{background:var(--violet);color:#fff}.qbtn .s{background:var(--soft);color:var(--violet)}
-.pdfbox{height:70vh;overflow:auto;background:var(--soft);border-radius:12px;padding:4px;-webkit-overflow-scrolling:touch}
+.pdfbox{position:relative;height:70vh;overflow:auto;background:var(--soft);border-radius:12px;padding:4px;-webkit-overflow-scrolling:touch}
 `;
 document.head.insertAdjacentHTML("beforeend", "<style>" + css + "</style>");
 $("app").insertAdjacentHTML("beforeend", '<section id="v-exam" class="hidden"></section>');
@@ -62,7 +62,7 @@ const box = html => {
   const tb = $("xtop");
   if(tb) tb.onclick = () => { stopTimer(); go(PREV); };
 };
-let pdfDoc = null, zoom = 1, drawId = 0;
+let pdfDoc = null, zoom = 1, drawId = 0, goPage = 0;
 function loadPdfJs(){
   return new Promise((ok, no) => {
     if(window.pdfjsLib) return ok();
@@ -103,11 +103,42 @@ async function drawPdf(){
     pages.push(cv);
     if(i === 1){ wrap.innerHTML = ""; }
     wrap.appendChild(cv);
+    if(goPage && i === goPage){ wrap.scrollTop = Math.max(0, cv.offsetTop - 4); goPage = 0; }
   }
+  updPg();
+}
+function curPage(){
+  const wrap = $("xpages");
+  if(!wrap) return 1;
+  let p = 1;
+  wrap.querySelectorAll("canvas").forEach((c, i) => { if(c.offsetTop <= wrap.scrollTop + 30) p = i + 1; });
+  return p;
+}
+function updPg(){
+  const el = $("xpg");
+  if(el && pdfDoc) el.textContent = curPage() + " / " + pdfDoc.numPages;
+}
+function pageTo(p){
+  const wrap = $("xpages");
+  if(!wrap) return;
+  const cs = wrap.querySelectorAll("canvas");
+  if(!cs.length) return;
+  p = Math.max(1, Math.min(cs.length, p));
+  wrap.scrollTop = Math.max(0, cs[p - 1].offsetTop - 4);
+  updPg();
+}
+async function findPage(doc, n){
+  const re = new RegExp("(^|\\s)" + n + "\\s*[.)]\\s");
+  for(let i = 1; i <= doc.numPages; i++){
+    const pg = await doc.getPage(i), tc = await pg.getTextContent();
+    if(re.test(tc.items.map(x => x.str).join(" "))) return i;
+  }
+  return 0;
 }
 function setZoom(d){
   zoom = Math.min(3, Math.max(0.5, zoom + d));
   $("zv").textContent = Math.round(zoom * 100) + "%";
+  goPage = curPage();
   const wrap = $("xpages"); if(wrap) wrap.innerHTML = "";
   drawPdf();
 }
@@ -195,7 +226,7 @@ function renderNew(r){
   }
 }
 
-function renderSheet(r){
+ function renderSheet(r){
   CUR = r;
   const t = r.test, saved = loadDraft(t.code);
   D = {closed: Array(35).fill(""), open: t.open_parts.map(n => Array(n).fill(""))};
@@ -284,6 +315,50 @@ function send(auto){
   else go2();
 }
 
+async function renderPdfView(t, R, keyPdf, kind, q){
+  const url = kind === "k" ? keyPdf : t.pdf_url;
+  if(!url){ toast(kind === "k" ? "Yechimlar PDF hali yuklanmagan." : "Savollar PDF yuklanmagan."); return; }
+  stopTimer(); showExam();
+  zoom = 1; pdfDoc = null; goPage = 0;
+  const ttl = (q ? q + "-savol · " : "") + (kind === "k" ? "Yechimlar PDF" : "Savollar PDF");
+  const bs = "flex:1;height:50px;border-radius:14px;font:700 15px system-ui,sans-serif;cursor:pointer;";
+  const zb = "width:44px;height:44px;border-radius:12px;border:1.5px solid var(--line2);background:#fff;color:var(--text);font:700 20px system-ui,sans-serif;cursor:pointer;padding:0";
+  box(`<div class="rh"><button id="xback" type="button" class="ibtn" aria-label="Orqaga">${BACK}</button><div style="flex:1;min-width:0"><b>${esc(ttl)}</b><small>${esc(t.subject)} · ${esc(t.title)}</small></div><span id="xpg" style="font-size:14px;font-weight:700;color:var(--muted)"></span></div>` +
+    `<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px"><button id="xpv" type="button" aria-label="Oldingi sahifa" style="${zb}">‹</button><button id="zm" type="button" aria-label="Kichraytirish" style="${zb}">−</button><span id="zv" style="min-width:56px;text-align:center;font-size:15px;font-weight:700">100%</span><button id="zp" type="button" aria-label="Kattalashtirish" style="${zb}">+</button><button id="xnx" type="button" aria-label="Keyingi sahifa" style="${zb}">›</button></div>` +
+    `<div class="pdfbox" id="xpages" style="height:52vh"><p class="sub">PDF yuklanmoqda...</p></div>` +
+    `<div style="display:flex;gap:10px;margin-top:12px"><button id="xa" type="button" style="${bs}border:0;background:#2440d6;color:#fff">${kind === "k" ? "Savolni ko'rish" : "Yechimini ko'rish"}</button><button id="xb2" type="button" style="${bs}border:0;background:#ffc629;color:#0f1a4d">${kind === "k" ? "Barcha savollar" : "Barcha yechimlar"}</button></div>` +
+    `<div style="display:flex;gap:10px;margin-top:10px"><button id="xdl" type="button" style="${bs}border:1.5px solid var(--line2);background:#fff;color:var(--text)">Yuklab olish</button><button id="xbot" type="button" style="${bs}border:1.5px solid var(--line2);background:#fff;color:var(--text)">Botga yuborish</button></div>`);
+  const other = kind === "k" ? "q" : "k";
+  $("xback").onclick = () => renderSolutions(t, R, keyPdf, q || 0);
+  $("zm").onclick = () => setZoom(-0.25);
+  $("zp").onclick = () => setZoom(0.25);
+  $("xpv").onclick = () => pageTo(curPage() - 1);
+  $("xnx").onclick = () => pageTo(curPage() + 1);
+  $("xa").onclick = () => renderPdfView(t, R, keyPdf, other, q);
+  $("xb2").onclick = () => renderPdfView(t, R, keyPdf, other, 0);
+  $("xdl").onclick = () => { if(tg.openLink) tg.openLink(url); else window.open(url, "_blank"); };
+  $("xbot").onclick = async () => {
+    $("xbot").disabled = true;
+    try{ await call("/api/tests/pdf_send", {code: t.code, kind}); toast("PDF botga yuborildi ✅"); }
+    catch(e){ toast("Yuborib bo'lmadi. Qayta urinib ko'ring."); }
+    $("xbot").disabled = false;
+  };
+  $("xpages").onscroll = updPg;
+  try{
+    await loadPdfJs();
+    pdfDoc = await pdfjsLib.getDocument(url).promise;
+    if(q){
+      const f = await findPage(pdfDoc, q);
+      if(f) goPage = f; else toast("Savol avtomatik topilmadi. ‹ › tugmalari bilan sahifani tanlang.");
+    }
+    updPg();
+    drawPdf();
+  }catch(e){
+    const w = $("xpages");
+    if(w) w.innerHTML = '<p class="sub">PDF ochilmadi. <a href="' + esc(url) + '" target="_blank">Yuklab olish</a></p>';
+  }
+}
+
 function renderSolutions(t, R, keyPdf, sel){
   const qs = R.qs || [];
   const cnt = {ok: 0, bad: 0, part: 0, none: 0};
@@ -322,10 +397,9 @@ function renderSolutions(t, R, keyPdf, sel){
     const c = $("xc"), bt = c.querySelector(".qbtn");
     c.innerHTML = card(); c.appendChild(bt);
   };
-  const openKey = () => { if(!keyPdf){ toast("Yechimlar PDF hali yuklanmagan."); return; } if(tg.openLink) tg.openLink(keyPdf); else window.open(keyPdf, "_blank"); };
-  $("xsolv").onclick = openKey;
-  $("xall").onclick = openKey;
-  $("xq").onclick = () => toast("Savolni PDF'da ko'rish tez orada qo'shiladi.");
+  $("xsolv").onclick = () => renderPdfView(t, R, keyPdf, "k", sel);
+  $("xall").onclick = () => renderPdfView(t, R, keyPdf, "k", 0);
+  $("xq").onclick = () => renderPdfView(t, R, keyPdf, "q", sel);
   $("xre").onclick = () => toast("Qayta ishlash tez orada qo'shiladi.");
 }
 
@@ -393,7 +467,7 @@ function renderResult(t, R, keyPdf){
       if(tg.openTelegramLink) tg.openTelegramLink(u); else window.open(u, "_blank");
     }catch(e){ toast("Ulashib bo'lmadi. Qayta urinib ko'ring."); }
   };
-  if($("xkey")) $("xkey").onclick = () => { if(tg.openLink) tg.openLink(keyPdf); else window.open(keyPdf, "_blank"); };
+  if($("xkey")) $("xkey").onclick = () => renderPdfView(t, R, keyPdf, "k", 0);
   if($("ebtn")) $("ebtn").onclick = async () => {
     const v = parseFloat(String($("eball").value).replace(",", "."));
     if(R.lang){
@@ -404,3 +478,4 @@ function renderResult(t, R, keyPdf){
   };
 }
 })();
+        
