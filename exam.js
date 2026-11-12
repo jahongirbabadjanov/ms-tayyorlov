@@ -11,6 +11,23 @@ const css = `
 .zb button{width:42px;height:36px;border-radius:10px;border:1.5px solid var(--line2);background:var(--card2);color:var(--text);font-size:20px}
 .ibtn{width:44px;height:44px;flex:none;border-radius:14px;border:1.5px solid var(--line2);background:var(--ibg,#2b3770);color:var(--ifg,#cfd9ff);display:grid;place-items:center;padding:0}
 .timer{align-items:center}
+.rh{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.rh b{display:block;font-size:17px;line-height:1.25}.rh small{display:block;margin-top:2px;color:var(--muted);font-size:13px}
+.rcd{background:var(--card);border:1.5px solid var(--line);border-radius:28px;padding:20px;box-shadow:0 10px 28px rgba(36,64,214,.08);margin-bottom:14px}
+.rtop{display:flex;align-items:center;gap:16px}
+.rbadge{width:84px;height:84px;flex:none;border-radius:24px;background:#0f1a4d;color:#ffc629;font-size:36px;font-weight:800;display:grid;place-items:center}
+.rmid{min-width:0}.rball b{font-size:40px;font-weight:800;line-height:1.05}.rball span{margin-left:6px;font-size:16px;font-weight:700;color:var(--muted)}
+.rsub{margin-top:2px;font-size:14px;font-weight:600;color:var(--muted)}
+.rbar{height:10px;border-radius:99px;background:var(--soft);overflow:hidden;margin:14px 0}.rbar i{display:block;height:100%;border-radius:99px;background:var(--violet)}
+.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.rchip{border-radius:16px;padding:12px 10px;background:var(--bg);border:1.5px solid var(--line)}.rchip b{display:block;font-size:18px;font-weight:800}.rchip small{display:block;margin-top:2px;font-size:12px;font-weight:600;color:var(--muted)}
+.rline{margin-top:12px;font-size:13px;font-weight:600;color:var(--muted)}
+.rhint{margin-top:12px;border-radius:16px;padding:12px 14px;background:#fff1cc;color:#6f4700;font-size:14px;font-weight:700;line-height:1.4}
+.rnote{margin-top:12px;font-size:12px;font-weight:500;color:var(--muted);line-height:1.45}
+.rtiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.rtile{border-radius:20px;border:1.5px solid var(--line);background:var(--card);padding:14px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;text-align:left;color:var(--text);font:inherit;cursor:pointer}
+.rtile b{font-size:16px}.rtile small{margin-top:-6px;font-size:12px;color:var(--muted)}
+.rti{width:44px;height:44px;border-radius:14px;background:var(--soft);color:var(--violet);display:grid;place-items:center}
 .pdfbox{height:70vh;overflow:auto;background:var(--soft);border-radius:12px;padding:4px;-webkit-overflow-scrolling:touch}
 `;
 document.head.insertAdjacentHTML("beforeend", "<style>" + css + "</style>");
@@ -253,33 +270,42 @@ function send(auto){
 
 function renderResult(t, R, keyPdf){
   stopTimer(); showExam();
-  const lvl = R.level ? `<span class="lvl">${R.level}</span>` : `<span class="sub">Daraja berilmadi (46 balldan past)</span>`;
-  const nm = R.lang ? "Yozma ish bahosi (0-24)" : R.extra === "written" ? "Yozma ish ball (0-75)" : "Esse ball (0-75)";
   const cm = x => String(x).replace(".", ",");
+  const nm = R.lang ? "Yozma ish bahosi (0-24)" : R.extra === "written" ? "Yozma ish ball (0-75)" : "Esse ball (0-75)";
   const tm = R.elapsed == null ? "—" : fmt(R.elapsed);
-  let top = `<div class="card center"><h2>MS test natijalar</h2><p class="sub">${esc(t.title)} · ${esc(t.subject)}</p>`;
+  const waitE = !R.pending && R.extra && R.extra_ball == null;
+  const shown = R.pending ? null : (R.final != null ? R.final : R.test_ball);
+  const closedOk = (R.ok || []).slice(0, 35).reduce((x, y) => x + y, 0);
+  const openOk = R.raw - closedOk, openAll = R.total - 35;
+  const chip = (v, l) => `<div class="rchip"><b>${v}</b><small>${l}</small></div>`;
+  const badge = R.level || (R.pending || waitE ? "…" : "—");
+  const S2 = 'width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
+  const tile = (id, p, a, b) => `<button class="rtile" id="${id}" type="button"><span class="rti"><svg ${S2}>${p}</svg></span><b>${a}</b><small>${b}</small></button>`;
+  let card = `<div class="rcd"><div class="rtop"><div class="rbadge">${badge}</div><div class="rmid">`;
+  if(R.pending) card += `<div class="rball"><b>${R.raw}/${R.total}</b></div><div class="rsub">Ball hisoblanmoqda</div>`;
+  else card += `<div class="rball"><b>${cm(shown)}</b><span>/ 75 ball</span></div><div class="rsub">${esc(t.subject)}</div>`;
+  card += `</div></div>`;
+  if(!R.pending) card += `<div class="rbar"><i style="width:${Math.min(100, shown / 75 * 100)}%"></i></div>`;
+  card += `<div class="rgrid">` + chip(R.raw + " / " + R.total, "to'g'ri javoblar") + chip(R.pct != null ? cm(R.pct) + "%" : "—", "foiz") + chip(R.rank ? R.rank + "-o'rin" : "—", R.rank ? R.of + " kishidan" : "o'rin") + chip(tm, "sarflangan vaqt") + `</div>`;
+  card += `<div class="rline">Yopiq ${closedOk}/35 · Ochiq ${openOk}/${openAll}</div>`;
   if(R.pending){
-    top += `<div class="big">${R.raw}/${R.total}</div><p class="sub">to'g'ri javoblar</p><p class="sub" style="margin-top:10px"><b>Ball hisoblanmoqda</b><br>Ball Rasch modeli bo'yicha kamida ${R.min_n} ishtirokchi to'planganda chiqadi (hozir ${R.participants} ta).</p>`;
+    card += `<div class="rhint">Ball Rasch modeli bo'yicha kamida ${R.min_n} ishtirokchi to'planganda chiqadi (hozir ${R.participants} ta). To'g'ri javoblar soni darrov ko'rinadi.</div>`;
   }else{
-    const shown = R.final != null ? R.final : R.test_ball;
-    top += `<div class="big">${cm(shown)}</div><p class="sub">${R.final != null ? "Umumiy ball (75 dan)" : "Test bali (75 dan)"}</p>`;
-    top += `<div class="kv"><span>To'g'ri javoblar</span><span>${R.raw} / ${R.total}</span></div>`;
-    if(R.pct != null) top += `<div class="kv"><span>Foiz</span><span>${cm(R.pct)}%</span></div>`;
-    if(R.rank) top += `<div class="kv"><span>O'rin</span><span>${R.rank} / ${R.of}</span></div>`;
-    top += `<div class="kv"><span>Sarflangan vaqt</span><span>${tm}</span></div>`;
-    if(R.otm) top += `<div class="kv"><span>OTM bali (1-fan / 2-fan)</span><span>${cm(R.otm.b1)} / ${cm(R.otm.b2)}</span></div>`;
-    if(R.extra){
-      if(R.extra_ball == null){
-        top += `<label style="text-align:left">${nm}</label><input id="eball" type="text" inputmode="decimal" placeholder="${R.lang ? "Masalan: 18,5" : "Masalan: 58"}"><div class="err" id="eerr"></div><button class="btn" id="ebtn" type="button">Umumiy ballni hisoblash</button>`;
-      }else{
-        top += `<div class="kv"><span>${nm.split(" (")[0]}</span><span>${R.lang && R.essay_raw != null ? cm(R.essay_raw) + " → " + cm(R.extra_ball) : cm(R.extra_ball)}</span></div><p class="sub">(${cm(R.extra_ball)} + ${cm(R.test_ball)}) / 2 = ${cm(R.final)}</p><div style="margin-top:8px">${lvl}</div>`;
-      }
-    }else top += `<div style="margin-top:8px">${lvl}</div>`;
-    if(R.next && R.next.need != null) top += `<p class="sub" style="margin-top:10px">${R.next.level} daraja uchun yana ${R.next.need} ta to'g'ri javob kerak</p>`;
-    top += `<p class="sub" style="margin-top:12px">Ball Rasch modeli bo'yicha, shu testni birinchi marta ishlagan ${R.participants} ishtirokchi natijasiga ko'ra hisoblanadi va ishtirokchilar qo'shilgani sari yangilanadi.</p>`;
+    if(waitE){
+      card += `<label style="margin-top:14px">${nm}</label><input id="eball" type="text" inputmode="decimal" placeholder="${R.lang ? "Masalan: 18,5" : "Masalan: 58"}"><div class="err" id="eerr"></div><button class="btn" id="ebtn" type="button">Umumiy ballni hisoblash</button>`;
+    }else if(R.extra){
+      card += `<div class="rline">${nm.split(" (")[0]}: ${R.lang && R.essay_raw != null ? cm(R.essay_raw) + " → " + cm(R.extra_ball) : cm(R.extra_ball)} · (${cm(R.extra_ball)} + ${cm(R.test_ball)}) / 2 = ${cm(R.final)}</div>`;
+    }
+    if(R.next && R.next.need != null) card += `<div class="rhint">${R.next.level} daraja uchun yana ${R.next.need} ta to'g'ri javob kerak</div>`;
+    if(R.otm) card += `<div class="rline">OTM bali: 1-fan ${cm(R.otm.b1)} · 2-fan ${cm(R.otm.b2)}</div>`;
+    card += `<div class="rnote">Ball Rasch modeli bo'yicha, shu testni birinchi marta ishlagan ${R.participants} ishtirokchi natijasiga ko'ra hisoblanadi va ishtirokchilar qo'shilgani sari yangilanadi.</div>`;
   }
-  top += "</div>";
-
+  card += `</div>`;
+  const tiles = `<div class="rtiles">` +
+    tile("xt-cert", '<circle cx="12" cy="9" r="6"/><path d="M8.5 14.5 7 22l5-3 5 3-1.5-7.5"/>', "Sertifikat", "Ma'lumotlar va rasm") +
+    tile("xt-sol", '<path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/>', "Yechimlar", "To'g'ri javoblar") +
+    tile("xt-an", '<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>', "Natija tahlili", "Statistika") +
+    tile("xt-all", '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/>', "Umumiy natijalar", "Reyting jadvali") + `</div>`;
   let rows = `<div class="rrow h"><span>№</span><span>Sizniki</span><span>To'g'ri</span></div>`, idx = 0;
   R.key.closed.forEach((c, i) => {
     const ok = R.ok[idx++], my = ((R.my.closed[i] || "-") + "").toUpperCase();
@@ -287,11 +313,25 @@ function renderResult(t, R, keyPdf){
   });
   R.key.open.forEach((parts, qi) => parts.forEach((p, pi) => {
     const ok = R.ok[idx++], my = (R.my.open[qi] && R.my.open[qi][pi]) || "-";
-    rows += `<div class="rrow"><span>${36 + qi}.${pi + 1}</span><span class="${ok ? "good" : "bad"}">${ok ? "✔" : "✖"} ${esc(my)}</span><span>${esc(p)}</span></div>`;
+   rows += `<div class="rrow"><span>${36 + qi}.${pi + 1}</span><span class="${ok ? "good" : "bad"}">${ok ? "✔" : "✖"} ${esc(my)}</span><span>${esc(p)}</span></div>`;
   }));
-  const keyBtn = keyPdf ? `<button class="btn yel" id="xkey" type="button">✅ Yechimlar PDF</button>` : "";
-  box(top + keyBtn + `<div class="card"><h2>To'g'ri javoblar</h2>${rows}</div><button class="btn sec" id="xb" type="button">Testlar ro'yxatiga qaytish</button>`);
-  $("xb").onclick = () => go(PREV);
+  const keyBtn = keyPdf ? `<button class="btn yel" id="xkey" type="button" style="margin-top:0;margin-bottom:14px">Yechimlar PDF</button>` : "";
+  box(`<div class="rh"><button id="xback" type="button" class="ibtn" aria-label="Orqaga">${BACK}</button><div><b>${esc(t.subject)} · ${esc(t.title)}</b><small>Natija</small></div></div>` +
+    card + tiles + keyBtn + `<div class="card" id="xrows"><h2>To'g'ri javoblar</h2>${rows}</div>` +
+    `<button class="btn" id="xshare" type="button" style="background:#0f1a4d;color:#fff;box-shadow:none">Ulashish</button>`);
+  $("xback").onclick = () => go(PREV);
+  $("xt-cert").onclick = () => toast("Sertifikat bo'limi tez orada qo'shiladi.");
+  $("xt-an").onclick = () => toast("Natija tahlili tez orada qo'shiladi.");
+  $("xt-all").onclick = () => toast("Umumiy natijalar tez orada qo'shiladi.");
+  $("xt-sol").onclick = () => { $("xrows").scrollIntoView({behavior: "smooth", block: "start"}); };
+  $("xshare").onclick = async () => {
+    try{
+      const w = await call("/api/wallet", {});
+      const txt = R.pending ? `MS Tayyorlov: ${t.subject} testida ${R.raw}/${R.total} to'g'ri javob berdim!` : `MS Tayyorlov: ${t.subject} testidan ${cm(shown)} ball${R.level ? " (" + R.level + ")" : ""} oldim!`;
+      const u = "https://t.me/share/url?url=" + encodeURIComponent(w.ref_link) + "&text=" + encodeURIComponent(txt);
+      if(tg.openTelegramLink) tg.openTelegramLink(u); else window.open(u, "_blank");
+    }catch(e){ toast("Ulashib bo'lmadi. Qayta urinib ko'ring."); }
+  };
   if($("xkey")) $("xkey").onclick = () => { if(tg.openLink) tg.openLink(keyPdf); else window.open(keyPdf, "_blank"); };
   if($("ebtn")) $("ebtn").onclick = async () => {
     const v = parseFloat(String($("eball").value).replace(",", "."));
