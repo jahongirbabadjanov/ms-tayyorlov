@@ -226,7 +226,7 @@ function renderNew(r){
   }
 }
 
- function renderSheet(r){
+function renderSheet(r){
   CUR = r;
   const t = r.test, saved = loadDraft(t.code);
   D = {closed: Array(35).fill(""), open: t.open_parts.map(n => Array(n).fill(""))};
@@ -441,18 +441,9 @@ function renderResult(t, R, keyPdf){
     tile("xt-sol", '<path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/>', "Yechimlar", "Savollar katagi") +
     tile("xt-an", '<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>', "Natija tahlili", "Statistika") +
     tile("xt-all", '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/>', "Umumiy natijalar", "Reyting jadvali") + `</div>`;
-  let rows = `<div class="rrow h"><span>№</span><span>Sizniki</span><span>To'g'ri</span></div>`, idx = 0;
-  R.key.closed.forEach((c, i) => {
-    const ok = R.ok[idx++], my = ((R.my.closed[i] || "-") + "").toUpperCase();
-    rows += `<div class="rrow"><span>${i + 1}</span><span class="${ok ? "good" : "bad"}">${ok ? "✔" : "✖"} ${esc(my)}</span><span>${c.toUpperCase()}</span></div>`;
-  });
-  R.key.open.forEach((parts, qi) => parts.forEach((p, pi) => {
-    const ok = R.ok[idx++], my = (R.my.open[qi] && R.my.open[qi][pi]) || "-";
-    rows += `<div class="rrow"><span>${36 + qi}.${pi + 1}</span><span class="${ok ? "good" : "bad"}">${ok ? "✔" : "✖"} ${esc(my)}</span><span>${esc(p)}</span></div>`;
-  }));
   const keyBtn = keyPdf ? `<button class="btn yel" id="xkey" type="button" style="margin-top:0;margin-bottom:14px">Yechimlar PDF</button>` : "";
   box(`<div class="rh"><button id="xback" type="button" class="ibtn" aria-label="Orqaga">${BACK}</button><div><b>${esc(t.subject)} · ${esc(t.title)}</b><small>Natija</small></div></div>` +
-    card + tiles + keyBtn + `<div class="card" id="xrows"><h2>To'g'ri javoblar</h2>${rows}</div>` +
+    card + tiles + keyBtn +
     `<button class="btn" id="xshare" type="button" style="background:#0f1a4d;color:#fff;box-shadow:none">Ulashish</button>`);
   $("xback").onclick = () => go(PREV);
   $("xt-cert").onclick = () => toast("Sertifikat bo'limi tez orada qo'shiladi.");
@@ -478,4 +469,4 @@ function renderResult(t, R, keyPdf){
   };
 }
 })();
-        
+      
