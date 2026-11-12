@@ -1,17 +1,17 @@
 (function(){
 const css = `
 .timer{position:sticky;top:0;z-index:5;background:var(--card2);border:1.5px solid var(--line2);border-radius:14px;padding:10px 14px;display:flex;justify-content:space-between;margin-bottom:12px;font-weight:700}
-.big{font-size:44px;font-weight:800;text-align:center;color:var(--mint);margin:6px 0}
-.lvl{display:inline-block;padding:6px 18px;border-radius:99px;background:linear-gradient(135deg,var(--violet),var(--mint));color:#0b1020;font-weight:800;font-size:22px}
-.rrow{display:grid;grid-template-columns:48px 1fr 1fr;gap:8px;padding:7px 0;border-bottom:1px solid #1a2342;font-size:14px}
+.big{font-size:44px;font-weight:800;text-align:center;color:var(--violet);margin:6px 0}
+.lvl{display:inline-block;padding:6px 18px;border-radius:99px;background:var(--violet);color:#fff;font-weight:800;font-size:22px}
+.rrow{display:grid;grid-template-columns:48px 1fr 1fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
 .rrow.h{color:var(--muted);font-size:12px}
 .good{color:var(--mint)}.bad{color:var(--danger)}
 .center{text-align:center}
 .zb{display:flex;gap:10px;align-items:center;margin-bottom:8px}
-.zb button{width:42px;height:36px;border-radius:10px;border:1.5px solid var(--line2);background:var(--card2);color:#fff;font-size:20px}
+.zb button{width:42px;height:36px;border-radius:10px;border:1.5px solid var(--line2);background:var(--card2);color:var(--text);font-size:20px}
 .ibtn{width:44px;height:44px;flex:none;border-radius:14px;border:1.5px solid var(--line2);background:var(--ibg,#2b3770);color:var(--ifg,#cfd9ff);display:grid;place-items:center;padding:0}
 .timer{align-items:center}
-.pdfbox{height:70vh;overflow:auto;background:#0b1020;border-radius:12px;padding:4px;-webkit-overflow-scrolling:touch}
+.pdfbox{height:70vh;overflow:auto;background:var(--soft);border-radius:12px;padding:4px;-webkit-overflow-scrolling:touch}
 `;
 document.head.insertAdjacentHTML("beforeend", "<style>" + css + "</style>");
 $("app").insertAdjacentHTML("beforeend", '<section id="v-exam" class="hidden"></section>');
@@ -92,7 +92,7 @@ window.go = v => { stopTimer(); $("v-exam").classList.add("hidden"); _go(v); };
 function toast(m){
   const d = document.createElement("div");
   d.textContent = m;
-  d.style.cssText = "position:fixed;left:16px;right:16px;bottom:96px;z-index:99;padding:13px 16px;border-radius:14px;background:#1f2a55;border:1.5px solid #ffd166;color:#eef1ff;font-size:14px;font-weight:600;text-align:center";
+  d.style.cssText = "position:fixed;left:16px;right:16px;bottom:96px;z-index:99;padding:13px 16px;border-radius:14px;background:#0f1b4d;border:1.5px solid #ffc629;color:#fff;font-size:14px;font-weight:600;text-align:center";
   document.body.appendChild(d);
   setTimeout(() => d.remove(), 2800);
 }
@@ -127,7 +127,7 @@ function renderNew(r){
   const st = t.starts_at ? Date.parse(t.starts_at) : 0, en = t.ends_at ? Date.parse(t.ends_at) : 0, nowT = Date.now();
   const fm = x => new Date(x).toLocaleString("ru-RU", {day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit"});
   const early = st && nowT < st, late = en && nowT > en, closedNow = early || late;
-  const note = early ? `<p class="err" id="wn" style="color:#ffd166"></p>` : late ? `<p class="err">Test vaqti tugagan (${fm(en)}).</p>` : (en ? `<p class="sub">Tugash vaqti: ${fm(en)}</p>` : "");
+  const note = early ? `<p class="err" id="wn" style="color:#b7791f"></p>` : late ? `<p class="err">Test vaqti tugagan (${fm(en)}).</p>` : (en ? `<p class="sub">Tugash vaqti: ${fm(en)}</p>` : "");
   box(`<div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><div><h2>${esc(t.title)}</h2><p class="sub">${esc(t.subject)}</p></div>${early ? '<span class="tag wait" id="cd"></span>' : ""}</div>
     <div class="kv"><span>Savollar soni</span><span>${t.question_count} ta</span></div>
     <div class="kv"><span>Vaqt</span><span>${t.duration_minutes} daqiqa</span></div>
