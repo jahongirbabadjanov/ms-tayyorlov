@@ -240,12 +240,16 @@ function renderSheet(r){
   zoom = 1; pdfDoc = null;
   box(`<div class="timer"><button id="xback" type="button" class="ibtn" aria-label="Orqaga" style="margin-right:10px">${BACK}</button><span style="flex:1">${esc(t.title)}</span><span id="tm">${fmt(left)}</span></div>
     ${t.pdf_url ? `<div class="card"><div class="zb"><button id="zm" type="button">−</button><span id="zv">100%</span><button id="zp" type="button">+</button></div><div class="pdfbox" id="xpages"><p class="sub">PDF yuklanmoqda...</p></div></div>` : ""}
+    <div class="card"><div class="phd"><b>Javob varaqasi</b><span id="xpc"></span></div><div class="pbar"><i id="xpf"></i></div>
+    <div class="pchips"><button type="button" class="pch" data-t="xgrid">Yopiq 1-35 <em id="xc1"></em></button>${t.open_parts.length ? `<button type="button" class="pch" data-t="xopen">Ochiq 36-${35 + t.open_parts.length} <em id="xc2"></em></button>` : ""}</div></div>
     <div class="card"><div class="sec-t" style="margin-top:0">Yopiq savollar (1-35)</div><div id="xgrid"></div>
     <div id="xopen"></div>
     ${t.written ? `<div class="note">📝 Yozma ishlar (${t.written} ta) qog'ozda bajariladi, bu yerda javob kiritilmaydi.</div>` : ""}
-    <div class="err" id="xerr"></div>
-    <button class="btn" id="xsend" type="button">Javoblarni yuborish</button></div>`);
-  drawGrid(); drawOpen();
+    <div class="err" id="xerr"></div></div>
+    <button class="btn" id="xsend" type="button" style="position:sticky;bottom:88px;z-index:5;box-shadow:0 8px 24px rgba(36,64,214,.3)">Yakunlash va yuborish</button>`);
+  if(!document.getElementById("xsheet-css")) document.head.insertAdjacentHTML("beforeend", "<style id=\"xsheet-css\">.phd{display:flex;align-items:center;justify-content:space-between;font-size:16px}.phd span{font-size:14px;font-weight:700;color:var(--muted)}.pbar{height:10px;border-radius:99px;background:var(--soft);overflow:hidden;margin:10px 0 12px}.pbar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#2440d6,#4a63f0);transition:width .25s}.pchips{display:flex;gap:8px;flex-wrap:wrap}.pch{border:1.5px solid var(--line2);background:#fff;color:var(--text);border-radius:99px;padding:8px 14px;font:700 13px system-ui,sans-serif;cursor:pointer}.pch em{font-style:normal;margin-left:4px;color:var(--violet)}.qn.dn{color:var(--violet);font-weight:800}</style>");
+  drawGrid(); drawOpen(); updateProg();
+  document.querySelectorAll(".pch").forEach(b => { b.onclick = () => { const e = $(b.dataset.t); if(e) e.scrollIntoView({behavior: "smooth", block: "start"}); }; });
   $("xback").onclick = () => {
     const out = () => go("tests");
     if(tg.showConfirm) tg.showConfirm("Testdan chiqasizmi? Vaqt to'xtamaydi, javoblaringiz saqlanadi. Kod bilan qaytib davom ettirasiz.", ok => { if(ok) out(); });
@@ -262,16 +266,29 @@ function renderSheet(r){
   }, 1000);
 }
 
+function updateProg(){
+  const T = 35 + D.open.reduce((p, r) => p + r.length, 0);
+  const c1 = D.closed.filter(x => x).length;
+  const c2 = D.open.reduce((p, r) => p + r.filter(x => String(x).trim()).length, 0);
+  const n = c1 + c2, set = (id, v) => { const e = $(id); if(e) e.textContent = v; };
+  set("xpc", n + "/" + T + " javob");
+  set("xc1", c1 + "/35");
+  set("xc2", c2 + "/" + (T - 35));
+  set("xsend", "Yakunlash va yuborish (" + n + "/" + T + ")");
+  const f = $("xpf"); if(f) f.style.width = (n / T * 100) + "%";
+}
+
 function drawGrid(){
   const g = $("xgrid"); g.innerHTML = "";
   D.closed.forEach((a, i) => {
     const row = document.createElement("div"); row.className = "qrow";
-    row.innerHTML = `<span class="qn">${i + 1}</span>`;
+    row.innerHTML = `<span class="qn${a ? " dn" : ""}">${i + 1}</span>`;
     for(const c of (i >= 32 ? "abcdef" : "abcd")){
       const b = document.createElement("button"); b.type = "button";
       b.textContent = c.toUpperCase(); b.className = "opt" + (a === c ? " on" : "");
       b.onclick = () => {
-        D.closed[i] = D.closed[i] === c ? "" : c; saveDraft();
+        D.closed[i] = D.closed[i] === c ? "" : c; saveDraft(); updateProg();
+        row.firstChild.classList.toggle("dn", !!D.closed[i]);
         row.querySelectorAll(".opt").forEach(x => x.classList.toggle("on", x.textContent.toLowerCase() === D.closed[i]));
       };
       row.appendChild(b);
@@ -290,7 +307,7 @@ function drawOpen(){
       const r = document.createElement("div"); r.className = "orow";
       r.innerHTML = `<span class="qn">${pi + 1})</span>`;
       const inp = document.createElement("input"); inp.value = v; inp.placeholder = "Javobingiz";
-      inp.oninput = () => { D.open[qi][pi] = inp.value; saveDraft(); };
+      inp.oninput = () => { D.open[qi][pi] = inp.value; saveDraft(); updateProg(); };
       r.appendChild(inp); o.appendChild(r);
     });
   });
