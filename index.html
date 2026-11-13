@@ -148,6 +148,7 @@ nav button.on i{filter:none;opacity:1}
           <div><label>Boshlanish (ixtiyoriy)</label><input id="starts" type="datetime-local"></div>
           <div><label>Tugash (ixtiyoriy)</label><input id="ends" type="datetime-local"></div>
         </div>
+        <label class="chk"><input type="checkbox" id="archive"> Natijalar e'lon qilingach ham ochiq qolsin (arxiv). Tugagandan keyin ishlaganlar reytingga kirmaydi</label>
 
         <div class="sec-t">⚡ Tez kiritish (yopiq savollar)</div>
         <textarea id="qtext" rows="2" placeholder="1a2b3c4d... yoki faqat harflar: abcd..."></textarea>
@@ -406,7 +407,8 @@ $("make").onclick = async () => {
       written: clamp(parseInt($("nwrit").value) || 0, 0, 5),
       essay: $("essay").checked,
       starts_at: sv ? new Date(sv).toISOString() : null,
-      ends_at: ev ? new Date(ev).toISOString() : null
+      ends_at: ev ? new Date(ev).toISOString() : null,
+      archive: $("archive").checked
     });
     const b64 = f => new Promise((ok, no) => { const fr = new FileReader(); fr.onload = () => ok(String(fr.result).split(",")[1]); fr.onerror = no; fr.readAsDataURL(f); });
     for(const [id, kind] of [["pdfq","q"],["pdfk","k"]]){
