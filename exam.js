@@ -467,7 +467,7 @@ function renderResult(t, R, keyPdf){
     tile("xt-all", '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/>', "Umumiy natijalar", "Reyting jadvali") + `</div>`;
   const keyBtn = keyPdf ? `<button class="btn yel" id="xkey" type="button" style="margin-top:0;margin-bottom:14px">Yechimlar PDF</button>` : "";
   box(`<div class="rh"><button id="xback" type="button" class="ibtn" aria-label="Orqaga">${BACK}</button><div><b>${esc(t.subject)} · ${esc(t.title)}</b><small>Natija</small></div></div>` +
-    (R.retake ? `<div class="rhint" style="margin-top:0;margin-bottom:14px">Qayta ishlash natijasi. Rasmiy ballingiz, reyting va sertifikatga ta'sir qilmaydi.</div>` : "") + card + tiles + keyBtn +
+    (R.retake ? `<div class="rhint" style="margin-top:0;margin-bottom:14px">Qayta ishlash natijasi. Rasmiy ballingiz, reyting va sertifikatga ta'sir qilmaydi.</div>` : R.late ? `<div class="rhint" style="margin-top:0;margin-bottom:14px">Arxiv: test tugagandan keyin ishlandi, natija reytingga kirmaydi.</div>` : "") + card + tiles + keyBtn +
     `<button class="btn sec" id="xre2" type="button" style="margin-top:0;margin-bottom:10px">Qayta ishlash</button>` +
     (R.retake ? "" : `<button class="btn" id="xshare" type="button" style="background:#0f1a4d;color:#fff;box-shadow:none">Ulashish</button>`));
   $("xback").onclick = () => { if(R.retake) openTest(t.code); else go(PREV); };
@@ -610,4 +610,5 @@ async function startRetake(t, keyPdf){
   if(tg.showConfirm) tg.showConfirm(msg, ok => { if(ok) go2(); }); else go2();
 }
 })();
+  
   
