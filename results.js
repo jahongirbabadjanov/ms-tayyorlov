@@ -11,6 +11,18 @@ document.head.insertAdjacentHTML("beforeend", "<style>"
 + ".rcps{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}"
 + ".rcp{padding:5px 9px;border-radius:99px;background:var(--soft);color:var(--violet);font-size:12px;font-weight:700;white-space:nowrap}"
 + ".rcp.g{background:#dff5e8;color:#14703d}.rcp.y{background:#fff1cc;color:#8a5a00}"
++ ".ra h3{margin:0 0 10px;font-size:16px}.ra .cd{background:var(--card);border:1.5px solid var(--line);border-radius:22px;padding:16px;margin-bottom:12px}"
++ ".rah{display:flex;align-items:center;gap:12px;margin:2px 0 14px}.rah b{font-size:20px}.rah small{display:block;color:var(--muted);font-size:13px}"
++ ".rab{flex:none;width:42px;height:42px;border:0;border-radius:14px;background:var(--ibg);color:var(--ifg);display:grid;place-items:center;cursor:pointer}"
++ ".rk{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}.rk div{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:12px 8px;text-align:center}"
++ ".rk b{display:block;font-size:22px}.rk span{font-size:12px;color:var(--muted);font-weight:600}"
++ ".rbr{display:flex;align-items:center;gap:8px;margin:7px 0;font-size:13px;font-weight:700}.rbr em{font-style:normal;flex:none;width:46px;color:var(--muted)}"
++ ".rbr u{display:block;height:14px;border-radius:7px;background:var(--violet);text-decoration:none;min-width:3px}.rbr u.n{background:#b9c3ec}.rbr span{flex:none;color:var(--muted);font-weight:600}.rbt{flex:1;min-width:0}"
++ ".rst{display:flex;height:16px;border-radius:8px;overflow:hidden;margin:6px 0 10px}.rst i{display:block;height:100%}"
++ ".rlg{display:flex;flex-wrap:wrap;gap:10px;font-size:13px;font-weight:700}.rlg span:before{content:'';display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;background:var(--c)}"
++ ".rqg{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.rqc{border-radius:12px;padding:6px 2px;text-align:center;font-size:12px;font-weight:700;background:#eef0f8;color:#5b6385}"
++ ".rqc b{display:block;font-size:15px}.rqc.ok{background:#dff5e8;color:#14703d}.rqc.part{background:#fff1cc;color:#8a5a00}.rqc.bad{background:#fde4e5;color:#b3262b}"
++ ".rtb{width:100%;border-collapse:collapse;font-size:13px}.rtb th{text-align:left;color:var(--muted);font-weight:700;padding:6px 4px}.rtb td{padding:9px 4px;border-top:1px solid var(--line)}.rtb td:last-child,.rtb th:last-child{text-align:right}"
 + ".rhi{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 0 14px}"
 + ".rhi h2{margin:0;font-size:22px;line-height:1.2}.rhi small{display:block;margin-top:2px;color:var(--muted);font-size:13px;font-weight:600}"
 + ".rbal{flex:none;padding:8px 14px;border-radius:99px;background:var(--yel);color:var(--navy);font-weight:800;font-size:14px}"
@@ -24,11 +36,11 @@ document.head.insertAdjacentHTML("beforeend", "<style>"
 + ".rsm svg{display:block;width:100%;height:auto;margin-top:12px}"
 + ".rtl{display:flex;gap:8px;margin-bottom:12px}.rtl input{flex:1;min-width:0}.rtl select{width:140px;flex:none}"
 + "</style>");
-$("v-answer").innerHTML = '<div class="rhi"><div><h2 id="rhi">Natijalarim</h2><small id="rcnt">Mening natijalarim</small></div><span class="rbal" id="rbal"></span></div>'
+$("v-answer").innerHTML = '<div id="rmain"><div class="rhi"><div><h2 id="rhi">Natijalarim</h2><small id="rcnt">Mening natijalarim</small></div><span class="rbal" id="rbal"></span></div>'
  + '<button class="rban" id="rban" type="button"><i><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/></svg></i><span><b>Umumiy tahlil</b><small>Barcha natijalaringiz statistikasi</small></span></button>'
  + '<div id="rsum"></div>'
  + '<div class="rtl"><input id="rsearch" placeholder="Test nomi, fan yoki kod..."><select id="rsort"><option value="new">Yangi avval</option><option value="old">Eski avval</option><option value="hi">Ball: yuqori</option><option value="lo">Ball: past</option></select></div>'
- + '<div id="rlist"></div>';
+ + '<div id="rlist"></div></div><div id="ranal" class="hidden"></div>';
 
 let R = [];
 const dt = s => { try{ return new Date(s).toLocaleDateString("ru-RU"); }catch(e){ return ""; } };
@@ -97,6 +109,44 @@ async function head(){
   }catch(e){}
 }
 
+async function openAnalysis(){
+  $("rmain").classList.add("hidden"); $("ranal").classList.remove("hidden");
+  $("ranal").innerHTML = '<p class="sub">Yuklanmoqda...</p>';
+  try{ draw2(await call("/api/results/analysis", {})); }
+  catch(e){ $("ranal").innerHTML = '<div class="empty"><div>⚠️</div><b>Yuklab bo\'lmadi</b>Birozdan so\'ng qayta urinib ko\'ring.</div>'; }
+}
+function closeAnalysis(){ $("ranal").classList.add("hidden"); $("rmain").classList.remove("hidden"); }
+function draw2(d){
+  const T = d.tests.filter(x => x.final != null);
+  const head = '<div class="rah"><button class="rab" id="rabk" type="button" aria-label="Orqaga"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><div><b>Umumiy tahlil</b><small>Barcha natijalaringiz statistikasi</small></div></div>';
+  if(!T.length){ $("ranal").innerHTML = head + '<div class="empty"><div>📊</div><b>Tahlil uchun ball kerak</b>Ball hisoblangan natijalar paydo bo\'lgach tahlil chiqadi.</div>'; $("rabk").onclick = closeAnalysis; return; }
+  const sum = T.reduce((p, x) => p + x.final, 0), best = Math.max(...T.map(x => x.final));
+  let h = head + `<div class="ra"><div class="rk"><div><b>${d.tests.length}</b><span>Testlar</span></div><div><b>${cm((sum / T.length).toFixed(1))}</b><span>O'rtacha ball</span></div><div><b>${cm(best)}</b><span>Eng yuqori</span></div></div>`;
+  const lv = ["A+", "A", "B+", "B", "C+", "C"], cnt = {};
+  T.forEach(x => { if(x.level) cnt[x.level] = (cnt[x.level] || 0) + 1; });
+  const mx = Math.max(1, ...Object.values(cnt));
+  h += '<div class="cd"><h3>Ball taqsimoti</h3>' + lv.map(l => `<div class="rbr"><em>${l}</em><div class="rbt"><u style="width:${(cnt[l] || 0) / mx * 100}%;${cnt[l] ? "" : "opacity:.25"}"></u></div><span>${cnt[l] || 0} ta</span></div>`).join("") + "</div>";
+  const by = {};
+  T.forEach(x => { const o = by[x.subject] || (by[x.subject] = {m: [], a: []}); o.m.push(x.final); if(x.avg != null) o.a.push(x.avg); });
+  const av = a => a.length ? a.reduce((p, q) => p + q, 0) / a.length : null;
+  h += '<div class="cd"><h3>Men va milliy o\'rtacha</h3>' + Object.keys(by).map(k => {
+    const m = av(by[k].m), n = av(by[k].a);
+    return `<div style="margin:10px 0 4px;font-size:13px;font-weight:800">${esc(k)}</div>`
+      + `<div class="rbr"><em>Men</em><div class="rbt"><u style="width:${m / 75 * 100}%"></u></div><span>${cm(m.toFixed(1))}</span></div>`
+      + (n == null ? "" : `<div class="rbr"><em>Hamma</em><div class="rbt"><u class="n" style="width:${n / 75 * 100}%"></u></div><span>${cm(n.toFixed(1))}</span></div>`);
+  }).join("") + "</div>";
+  const tt = d.totals, all = Math.max(1, tt.ok + tt.part + tt.bad), pc = v => Math.round(v / all * 100);
+  h += `<div class="cd"><h3>To'g'ri, qisman, xato</h3><div class="rst"><i style="width:${tt.ok / all * 100}%;background:#22b866"></i><i style="width:${tt.part / all * 100}%;background:#ffc629"></i><i style="width:${tt.bad / all * 100}%;background:#e5484d"></i></div>`
+    + `<div class="rlg"><span style="--c:#22b866">To'g'ri ${pc(tt.ok)}%</span><span style="--c:#ffc629">Qisman ${pc(tt.part)}%</span><span style="--c:#e5484d">Xato ${pc(tt.bad)}%</span></div></div>`;
+  if(d.last && d.last.qs.length){
+    h += `<div class="cd"><h3>Oxirgi test: ${esc(d.last.title)}</h3><div class="rnote" style="margin:0 0 10px">Katak rangi sizning javobingiz, pastdagi foiz ${d.last.n} ishtirokchidan nechtasi to'g'ri yechgani.</div><div class="rqg">`
+      + d.last.qs.map((q, i) => `<div class="rqc ${q === "ok" ? "ok" : q === "part" ? "part" : q === "bad" ? "bad" : ""}"><b>${i + 1}</b>${d.last.qpct[i] != null ? d.last.qpct[i] + "%" : "—"}</div>`).join("") + "</div></div>";
+  }
+  h += '<div class="cd"><h3>Testlarim</h3><table class="rtb"><tr><th>Test</th><th>Fan</th><th>Ball</th></tr>'
+    + d.tests.slice().reverse().map(x => `<tr><td>${esc(x.title)}<br><span style="color:var(--muted)">${dt(x.date)}</span></td><td>${esc(x.subject)}</td><td><b>${x.final == null ? "…" : cm(x.final)}</b> ${x.level ? esc(x.level) : ""}</td></tr>`).join("") + "</table></div></div>";
+  $("ranal").innerHTML = h;
+  $("rabk").onclick = closeAnalysis;
+}
 window.loadResults = async function(){
   head();
   $("rlist").innerHTML = '<p class="sub">Yuklanmoqda...</p>';
@@ -105,11 +155,12 @@ window.loadResults = async function(){
 };
 $("rsearch").oninput = draw;
 $("rsort").onchange = draw;
-$("rban").onclick = () => { const t = window.Telegram && Telegram.WebApp; const m = "Umumiy tahlil tez orada qo'shiladi."; if(t && t.showAlert) t.showAlert(m); };
+$("rban").onclick = openAnalysis;
 $("rlist").addEventListener("click", e => {
   const c = e.target.closest(".rc");
   if(c){ $("codein").value = c.dataset.code; $("codego").click(); }
 });
 const _g = window.go;
-window.go = v => { _g(v); if(v === "answer") loadResults(); };
+window.go = v => { _g(v); if(v === "answer"){ closeAnalysis(); loadResults(); } };
 })();
+                                                                                                                                          
