@@ -6,6 +6,11 @@ document.head.insertAdjacentHTML("beforeend", "<style>"
 + ".rs{text-align:right;flex:none}.rs strong{display:block;font-size:24px;color:var(--mint)}"
 + ".rl{display:inline-block;margin-top:4px;padding:3px 10px;border-radius:99px;background:var(--violet);color:#fff;font-weight:800;font-size:13px}"
 + ".rw{display:inline-block;margin-top:4px;padding:3px 10px;border-radius:99px;background:#fff1cc;color:#8a5a00;font-size:12px}"
++ ".rc{display:block;padding:14px 14px 12px}.rc .rtop{display:flex;align-items:flex-start;gap:12px}"
++ ".rc .rm b{font-size:18px}.rs strong{font-size:30px;line-height:1}.rs .rl{margin-top:6px;padding:4px 12px;font-size:14px}"
++ ".rcps{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}"
++ ".rcp{padding:5px 9px;border-radius:99px;background:var(--soft);color:var(--violet);font-size:12px;font-weight:700;white-space:nowrap}"
++ ".rcp.g{background:#dff5e8;color:#14703d}.rcp.y{background:#fff1cc;color:#8a5a00}"
 + ".rhi{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 0 14px}"
 + ".rhi h2{margin:0;font-size:22px;line-height:1.2}.rhi small{display:block;margin-top:2px;color:var(--muted);font-size:13px;font-weight:600}"
 + ".rbal{flex:none;padding:8px 14px;border-radius:99px;background:var(--yel);color:var(--navy);font-weight:800;font-size:14px}"
@@ -28,6 +33,7 @@ $("v-answer").innerHTML = '<div class="rhi"><div><h2 id="rhi">Natijalarim</h2><s
 let R = [];
 const dt = s => { try{ return new Date(s).toLocaleDateString("ru-RU"); }catch(e){ return ""; } };
 const cm = x => String(x).replace(".", ",");
+const dur = sec => { const m = Math.round(sec / 60), h = Math.floor(m / 60); return h ? h + " s " + (m % 60) + " daq" : Math.max(1, m) + " daq"; };
 const val = r => r.final != null ? r.final : (r.test_ball != null ? r.test_ball : null);
 const tm = r => { const v = Date.parse(r.date || ""); return isNaN(v) ? 0 : v; };
 
@@ -69,11 +75,14 @@ function draw(){
   if(!list.length){ $("rlist").innerHTML = '<div class="empty"><b>Hech narsa topilmadi</b></div>'; return; }
   $("rlist").innerHTML = list.map(r => {
     const waiting = !r.pending && r.extra && r.extra_ball == null;
-    const big = r.pending ? (r.raw + "/" + r.total) : waiting ? r.test_ball : r.final;
-    const badge = r.level ? `<span class="rl">${esc(r.level)}</span>` : (r.pending ? '<span class="rw">ball hisoblanmoqda</span>' : (waiting ? '<span class="rw">ball kutilmoqda</span>' : ""));
-    const cnt = r.pending ? "" : ` · ${r.raw}/${r.total}`;
-    return `<div class="rc" data-code="${esc(r.code)}"><div class="rm"><b>${esc(r.title)}</b><small>${esc(r.subject)} · ${dt(r.date)}${cnt}</small></div>`
-      + `<div class="rs"><strong>${big}</strong>${badge}</div></div>`;
+    const big = r.pending ? "…" : waiting ? cm(r.test_ball) : cm(r.final);
+    const badge = r.level ? `<span class="rl">${esc(r.level)}</span>` : (r.pending ? '<span class="rw">hisoblanmoqda</span>' : (waiting ? '<span class="rw">yozma ish kutilmoqda</span>' : ""));
+    const ch = [`<span class="rcp g">${r.raw}/${r.total} ✓</span>`];
+    if(r.pct != null && !r.pending && !waiting) ch.push(`<span class="rcp">${cm(r.pct)}%</span>`);
+    if(r.rank != null && r.of) ch.push(`<span class="rcp y">O'rin ${r.rank}/${r.of}</span>`);
+    if(r.elapsed) ch.push(`<span class="rcp">${dur(r.elapsed)}</span>`);
+    return `<div class="rc" data-code="${esc(r.code)}"><div class="rtop"><div class="rm"><b>${esc(r.title)}</b><small>${esc(r.subject)} · ${esc(r.code)} · ${dt(r.date)}</small></div>`
+      + `<div class="rs"><strong>${big}</strong>${badge}</div></div><div class="rcps">${ch.join("")}</div></div>`;
   }).join("");
 }
 
@@ -104,4 +113,3 @@ $("rlist").addEventListener("click", e => {
 const _g = window.go;
 window.go = v => { _g(v); if(v === "answer") loadResults(); };
 })();
-       
