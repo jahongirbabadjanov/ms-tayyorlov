@@ -481,7 +481,7 @@ function renderResult(t, R, keyPdf){
     if(R.pending || !R.level){ toast(R.pending ? "Ball hisoblangach sertifikat olish mumkin bo'ladi." : "Sertifikat daraja (C dan yuqori) olganlar uchun beriladi."); return; }
     renderCert(t, R, keyPdf);
   };
-  if($("xt-an")) $("xt-an").onclick = () => toast("Natija tahlili tez orada qo'shiladi.");
+  if($("xt-an")) $("xt-an").onclick = () => { if(R.pending){ toast("Ball hisoblangach tahlil chiqadi."); return; } renderAnalysis(t, R, keyPdf); };
   if($("xt-all")) $("xt-all").onclick = () => renderBoard(t, R, keyPdf);
   $("xt-sol").onclick = () => renderSolutions(t, R, keyPdf, 0);
   if($("xshare")) $("xshare").onclick = async () => {
@@ -495,6 +495,57 @@ function renderResult(t, R, keyPdf){
   if($("xkey")) $("xkey").onclick = () => renderPdfView(t, R, keyPdf, "k", 0);
   if($("eopen")) $("eopen").onclick = () => renderEssay(t, R, keyPdf);
 }
+async function renderAnalysis(t, R, keyPdf){
+  stopTimer(); showExam();
+  if(!document.getElementById("ta-css")){
+    const st = document.createElement("style"); st.id = "ta-css";
+    st.textContent = ".ta-c{background:#fff;border:1.5px solid #e3e8f6;border-radius:22px;padding:18px;margin-bottom:14px}.ta-c h3{margin:0 0 12px;font-size:17px;color:#0f1a4d}.ta-top{display:flex;align-items:center;gap:14px}.ta-big{font-size:42px;font-weight:800;line-height:1;color:#0f1a4d}.ta-big span{display:block;margin-top:4px;font-size:14px;color:#6b7699;font-weight:600}.ta-lv{background:#2440d6;color:#fff;border-radius:999px;padding:7px 16px;font-weight:800;font-size:18px}.ta-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.ta-chip{background:#e8edfb;color:#2440d6;border-radius:999px;padding:7px 13px;font-weight:700;font-size:14px}.ta-chip.y{background:#fff0c4;color:#8a5a00}.ta-cnt{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.ta-cnt div{border-radius:14px;padding:10px 4px;text-align:center}.ta-cnt b{display:block;font-size:22px}.ta-cnt small{font-size:12px;font-weight:700}.ta-g{background:#dcf5e5;color:#157a3c}.ta-p{background:#fff0c4;color:#8a5a00}.ta-r{background:#fde0e0;color:#b42323}.ta-n{background:#eceff7;color:#6b7699}.ta-bar{display:flex;height:12px;border-radius:99px;overflow:hidden;margin-top:14px}.ta-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:7px}.ta-grid span{aspect-ratio:1;border-radius:10px;display:grid;place-items:center;font-size:13px;font-weight:800}.ta-grid .ta-g{background:#27b45f;color:#fff}.ta-grid .ta-r{background:#e5484d;color:#fff}.ta-grid .ta-n{background:#d5dae8;color:#5a6280}.ta-grid .ta-p{background:#ffc629;color:#0f1a4d}.ta-leg{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:13px;color:#6b7699;font-weight:600}.ta-leg i{display:inline-block;width:11px;height:11px;border-radius:4px;margin-right:5px}.ta-dif div{display:flex;align-items:center;gap:10px;margin-bottom:10px}.ta-dif span{width:64px;font-weight:700;font-size:14px}.ta-tr{flex:1;height:12px;background:#eceff7;border-radius:99px;position:relative}.ta-tr i{position:absolute;left:0;top:0;bottom:0;border-radius:99px}.ta-dif b{width:48px;text-align:right;font-size:14px}.ta-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ta-two div{background:#f3f5fb;border-radius:16px;padding:12px}.ta-two small{color:#6b7699;font-weight:700;font-size:12px}.ta-two b{display:block;font-size:22px;margin-top:2px;color:#0f1a4d}.ta-hist{display:flex;align-items:flex-end;gap:5px;height:90px}.ta-hist i{flex:1;background:#d5dae8;border-radius:6px 6px 2px 2px;min-height:3px}.ta-hist i.me{background:#2440d6}.ta-hl{display:flex;justify-content:space-between;color:#6b7699;font-size:12px;font-weight:700;margin-top:6px}.ta-pr{margin-top:12px;background:#e8edfb;color:#2440d6;border-radius:14px;padding:10px 12px;font-weight:800;text-align:center}.ta-cmp{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;font-weight:700;color:#0f1a4d}.ta-q{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid #edf0f8}.ta-qn{width:42px;height:42px;border-radius:12px;background:#fde0e0;color:#b42323;display:grid;place-items:center;font-weight:800}.ta-q small{color:#6b7699;font-size:13px}.ta-q em{font-style:normal;font-weight:800;color:#157a3c}.ta-tip{border-radius:16px;padding:13px 15px;font-weight:700;margin-bottom:14px;line-height:1.4;background:#fff3cd;color:#7a4b00}.ta-tip.gn{background:#e3f7ea;color:#146c35}.ta-path{display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:#6b7699;margin-top:16px}.ta-pt{height:12px;background:#eceff7;border-radius:99px;position:relative;margin-top:6px}.ta-pt i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#2440d6,#ffc629);border-radius:99px}";
+    document.head.appendChild(st);
+  }
+  const hd = `<div class="rh"><button id="xback" type="button" class="ibtn" aria-label="Orqaga">${BACK}</button><div><b>Natija tahlili</b><small>${esc(t.subject)} · ${esc(t.title)}</small></div></div>`;
+  box(hd + '<div class="ta-c"><p class="sub" style="margin:0">Tahlil tayyorlanmoqda...</p></div>');
+  $("xback").onclick = () => renderResult(t, R, keyPdf);
+  let A;
+  try{ A = await call("/api/tests/an", {code: t.code}); }
+  catch(e){
+    const m = String((e && e.message) || e);
+    box(hd + '<div class="ta-c"><p class="sub" style="margin:0">' + (m.indexOf("400") >= 0 ? "Tahlil ball hisoblangach chiqadi. Ishtirokchilar yetarli bo'lishini kuting." : "Tahlilni ochib bo'lmadi. Qayta urinib ko'ring.") + '</p></div>');
+    $("xback").onclick = () => renderResult(t, R, keyPdf);
+    return;
+  }
+  const cm = x => String(x).replace(".", ",");
+  const c = A.counts, tot = A.total ? c.ok + c.part + c.bad + c.none : 1;
+  const w = x => (100 * x / (tot || 1)).toFixed(1) + "%";
+  const cls = {ok: "ta-g", part: "ta-p", bad: "ta-r", none: "ta-n"};
+  const df = (nm, key, col) => { const d = A.diff[key]; return `<div><span>${nm}</span><div class="ta-tr"><i style="width:${d[1] ? Math.round(100 * d[0] / d[1]) : 0}%;background:${col}"></i></div><b>${d[0]}/${d[1]}</b></div>`; };
+  const mx = Math.max.apply(null, A.hist.bins.concat([1]));
+  const hist = A.hist.bins.map((v, i) => `<i class="${i === A.hist.me ? "me" : ""}" style="height:${Math.max(4, Math.round(100 * v / mx))}%"></i>`).join("");
+  let path = "";
+  if(A.path) path = `<div class="ta-path"><span>${A.path.cur === "-" ? "Daraja yo'q" : esc(A.path.cur) + " " + A.path.cur_lim}</span><span>${esc(A.path.next)} ${A.path.next_lim}</span></div><div class="ta-pt"><i style="width:${A.path.progress}%"></i></div>`;
+  const chips = `<span class="ta-chip">${cm(A.pct)}%</span>` + (A.next && A.next.need ? `<span class="ta-chip y">${esc(A.next.level)} uchun yana ${A.next.need} ta to'g'ri javob</span>` : "");
+  let h = hd +
+    `<div class="ta-c"><div class="ta-top"><div class="ta-big">${cm(A.final)}<span>/ 75 ball</span></div>${A.level ? `<div class="ta-lv">${esc(A.level)}</div>` : ""}<div style="flex:1"></div><div style="text-align:right"><b style="font-size:22px;color:#0f1a4d">${A.rank}/${A.of}</b><br><small style="color:#6b7699;font-weight:700">o'rin</small></div></div><div class="ta-chips">${chips}</div>${path}</div>` +
+    `<div class="ta-c"><h3>Javoblar</h3><div class="ta-cnt"><div class="ta-g"><b>${c.ok}</b><small>To'g'ri</small></div><div class="ta-p"><b>${c.part}</b><small>Qisman</small></div><div class="ta-r"><b>${c.bad}</b><small>Xato</small></div><div class="ta-n"><b>${c.none}</b><small>Javobsiz</small></div></div><div class="ta-bar"><i style="width:${w(c.ok)};background:#27b45f"></i><i style="width:${w(c.part)};background:#ffc629"></i><i style="width:${w(c.bad)};background:#e5484d"></i><i style="width:${w(c.none)};background:#d5dae8"></i></div></div>` +
+    `<div class="ta-c"><h3>Savollar xaritasi</h3><div class="ta-grid">${A.qs.map((s, i) => `<span class="${cls[s] || "ta-n"}">${i + 1}</span>`).join("")}</div><div class="ta-leg"><span><i style="background:#27b45f"></i>To'g'ri</span><span><i style="background:#ffc629"></i>Qisman</span><span><i style="background:#e5484d"></i>Xato</span><span><i style="background:#d5dae8"></i>Javobsiz</span></div></div>` +
+    `<div class="ta-c"><h3>Qiyinlik bo'yicha</h3><div class="ta-dif">${df("Oson", "easy", "#27b45f")}${df("O'rta", "mid", "#ffc629")}${df("Qiyin", "hard", "#e5484d")}</div><div class="ta-two" style="margin-top:6px"><div><small>Yopiq savollar</small><b>${A.kinds.closed[0]}/${A.kinds.closed[1]}</b></div><div><small>Ochiq savollar</small><b>${A.kinds.open[0]}/${A.kinds.open[1]}</b></div></div></div>` +
+    `<div class="ta-c"><h3>Ball taqsimoti</h3><div class="ta-hist">${hist}</div><div class="ta-hl"><span>0</span><span>Siz: ${cm(A.final)}</span><span>75</span></div><div class="ta-pr">Siz ishtirokchilarning ${A.pctile}% idan yuqorisiz</div></div>`;
+  if(A.elapsed != null){
+    const el = Math.max(1, Math.round(A.elapsed / 60));
+    const fast = A.elapsed < A.duration * 60 * 0.25;
+    h += `<div class="ta-c"><h3>Vaqt</h3><div class="ta-two"><div><small>Sarflangan</small><b>${el} daq</b></div><div><small>Ajratilgan</small><b>${A.duration} daq</b></div></div>${fast ? '<div class="ta-tip" style="margin:12px 0 0;font-size:14px">⏱ Juda tez tugatdingiz. Shoshilmang, savollarni tekshirib chiqing.</div>' : ""}</div>`;
+  }
+  h += `<div class="ta-c"><h3>O'rtacha bilan solishtirish</h3>` +
+    [["Siz", A.final, "#2440d6"], ["Barcha o'rtacha", A.avg, "#ffc629"], ["Eng yuqori", A.top, "#27b45f"]].map(x => `<div class="ta-cmp"><span>${x[0]}</span><span>${x[1] == null ? "-" : cm(x[1])}</span></div><div class="ta-pt" style="margin:0 0 12px"><i style="width:${Math.round(100 * (x[1] || 0) / 75)}%;background:${x[2]}"></i></div>`).join("") + `</div>`;
+  if(A.review.length){
+    h += `<div class="ta-c"><h3>Birinchi bo'lib ko'rib chiqing</h3><p style="margin:-4px 0 6px;color:#6b7699;font-size:13px;font-weight:600">Siz xato qilgan, lekin ko'pchilik topgan savollar</p>` +
+      A.review.map(x => `<div class="ta-q"><div class="ta-qn">${x.q}</div><div><b style="color:#0f1a4d">${x.q}-savol</b><br><small>Ishtirokchilarning <em>${x.pct}%</em> i topgan</small></div></div>`).join("") + `</div>`;
+  }
+  if(A.gain) h += `<div class="ta-tip gn">🚀 Shu ${A.gain.n} ta oson savolni topsangiz, ballingiz <b>${cm(A.gain.from)} → ${cm(A.gain.to)}</b> bo'ladi${A.gain.level && A.gain.level !== A.level ? " va <b>" + esc(A.gain.level) + "</b> darajaga chiqasiz" : ""}.</div>`;
+  if(c.none) h += `<div class="ta-tip">📝 ${c.none} ta savolga javob bermagansiz. Bilmasangiz ham taxmin qilib belgilang, xato javob ball kamaytirmaydi.</div>`;
+  box(h);
+  $("xback").onclick = () => renderResult(t, R, keyPdf);
+}
+
 async function renderBoard(t, R, keyPdf){
   stopTimer(); showExam();
   zoom = 1; pdfDoc = null; goPage = 0;
@@ -657,4 +708,3 @@ async function startRetake(t, keyPdf){
   if(tg.showConfirm) tg.showConfirm(msg, ok => { if(ok) go2(); }); else go2();
 }
 })();
-        
