@@ -263,7 +263,7 @@ $("reg").addEventListener("submit", async e => {
 
 /* tests list */
 let TESTS = [], FILTER = "", CAT = "ms";
-const ICONS = {"Matematika":"∑","Fizika":"⚛️","Kimyo":"🧪","Biologiya":"🧬","Tarix":"🏛️","Geografiya":"🌍","Ingliz":"🔤","Ona tili":"📖","Qoraqalpoq":"📖","Rus":"📚"};
+const ICONS = {"Matematika":"🧮","Fizika":"🧲","Kimyo":"🧪","Biologiya":"🧬","Tarix":"🏛️","Geografiya":"🌍","Ingliz":"🇬🇧","Ona tili":"📖","Qoraqalpoq":"📖","Rus":"🇷🇺"};
 const iconOf = s => { for(const k in ICONS) if((s||"").startsWith(k)) return ICONS[k]; return "📘"; };
 
 function renderChips(){
