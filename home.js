@@ -45,5 +45,13 @@ document.addEventListener("click", e => {
   const c = e.target.closest("#v-tests .hero.lr");
   if(c && c.dataset.code){ $("codein").value = c.dataset.code; $("codego").click(); }
 });
+const qc = new URLSearchParams(location.search).get("code");
+if(qc && /^\d{4}$/.test(qc)){
+  let n = 0;
+  const iv = setInterval(() => {
+    n++;
+    if(!$("v-tests").classList.contains("hidden")){ clearInterval(iv); $("codein").value = qc; $("codego").click(); }
+    else if(n > 60) clearInterval(iv);
+  }, 500);
+}
 })();
-     
