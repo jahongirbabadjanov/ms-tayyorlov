@@ -511,7 +511,6 @@ async function renderBoard(t, R, keyPdf){
   $("xnx").onclick = () => pageTo(curPage() + 1);
   $("xpages").onscroll = updPg;
   let b64 = "";
-  $("xdl").onclick = () => {
   $("xdl").onclick = async () => {
     $("xdl").disabled = true;
     try{
@@ -538,6 +537,7 @@ async function renderBoard(t, R, keyPdf){
     if(w) w.innerHTML = '<p class="sub">' + (m.indexOf("403") >= 0 ? "Umumiy natijalar test vaqti tugagach chiqadi." : m.indexOf("400") >= 0 ? "Natijalar hali hisoblanmagan. Ishtirokchilar yetarli bo'lgach chiqadi." : "Natijalarni ochib bo'lmadi. Qayta urinib ko'ring.") + '</p>';
   }
 }
+
 async function renderCert(t, R, keyPdf){
   stopTimer(); showExam();
   let m = ME || {};
@@ -657,5 +657,4 @@ async function startRetake(t, keyPdf){
   if(tg.showConfirm) tg.showConfirm(msg, ok => { if(ok) go2(); }); else go2();
 }
 })();
-  
-  
+        
