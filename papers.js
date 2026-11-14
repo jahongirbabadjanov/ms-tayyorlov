@@ -15,6 +15,7 @@ function drawPapers(){
     + `<div class="tm"><b>${esc(p.title)}</b><small>${esc(p.subject)}</small></div>`
     + (p.price ? `<span class="tag paid">${som(p.price)}</span>` : '<span class="tag live">Bepul</span>') + `</div>`
     + `<div class="ppb"><button class="btn yel" data-act="${p.owned ? "open" : "buy"}" type="button">${p.owned ? "PDF ochish" : "Sotib olish · " + som(p.price)}</button>`
+    + (p.test_code ? '<button class="btn" data-act="test" type="button" style="background:#0f1a4d;color:#fff;box-shadow:none">Testni ishlash</button>' : "")
     + (ADMIN ? '<button class="del" data-act="del" type="button" aria-label="O\'chirish">🗑</button>' : "") + `</div></div>`).join("");
 }
 
@@ -34,6 +35,7 @@ function adminForm(){
   h.innerHTML = '<h2>Tushgan savol qo\'shish</h2><p class="sub">Faqat admin ko\'radi</p>'
     + '<label>Fan</label><select id="psub"></select><label>Nomi *</label><input id="ptitle" placeholder="Masalan: 2025-yil Tarix savollari">'
     + '<label>Narxi (so\'m, 0 = bepul)</label><input id="pprice" type="number" inputmode="numeric" value="0">'
+    + '<label>Test kodi (ixtiyoriy)</label><input id="pcode" inputmode="numeric" maxlength="4" placeholder="Masalan: 1234">'
     + '<label>PDF fayl *</label><input id="pfile" type="file" accept="application/pdf">'
     + '<div class="err" id="perr"></div><button class="btn" id="padd" type="button">Qo\'shish</button>';
   $("v-create").appendChild(h);
@@ -46,11 +48,11 @@ function adminForm(){
     $("padd").disabled = true; $("perr").textContent = "";
     try{
       const data = await new Promise((ok, no) => { const rd = new FileReader(); rd.onload = () => ok(rd.result); rd.onerror = no; rd.readAsDataURL(f); });
-      await call("/api/papers/create", {subject: $("psub").value, title, price: parseInt($("pprice").value, 10) || 0, data});
-      $("ptitle").value = ""; $("pfile").value = ""; $("pprice").value = "0";
+      await call("/api/papers/create", {subject: $("psub").value, title, price: parseInt($("pprice").value, 10) || 0, test_code: $("pcode").value.trim(), data});
+      $("ptitle").value = ""; $("pfile").value = ""; $("pprice").value = "0"; $("pcode").value = "";
       if(tgw && tgw.showAlert) tgw.showAlert("Qo'shildi. Asosiy ekran → Tushgan savollar bo'limida ko'rinadi."); 
       loadPapers(false);
-    }catch(e){ $("perr").textContent = "Yuklab bo'lmadi. Qayta urinib ko'ring."; }
+    }catch(e){ $("perr").textContent = String(e.message).includes("400") ? "Bunday kodli test topilmadi yoki ma'lumot noto'g'ri." : "Yuklab bo'lmadi. Qayta urinib ko'ring."; }
     $("padd").disabled = false;
   };
 }
@@ -67,6 +69,7 @@ $("tlist").addEventListener("click", async e => {
   if(!b || !c) return;
   const p = PP.find(x => x.id === +c.dataset.id); if(!p) return;
   if(b.dataset.act === "open"){ if(p.url) openUrl(p.url); return; }
+  if(b.dataset.act === "test"){ $("codein").value = p.test_code; $("codego").click(); return; }
   if(b.dataset.act === "del"){
     const go = async () => { try{ await call("/api/papers/delete", {id: p.id}); loadPapers(false); }catch(x){} };
     if(tgw && tgw.showConfirm) tgw.showConfirm("O'chirilsinmi?", ok => { if(ok) go(); }); else go();
@@ -81,4 +84,3 @@ $("tlist").addEventListener("click", async e => {
   if(tgw && tgw.showConfirm) tgw.showConfirm(msg, ok => { if(ok) go(); }); else go();
 });
 })();
-     
