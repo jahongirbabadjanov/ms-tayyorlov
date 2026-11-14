@@ -478,7 +478,7 @@ function renderResult(t, R, keyPdf){
     renderCert(t, R, keyPdf);
   };
   if($("xt-an")) $("xt-an").onclick = () => toast("Natija tahlili tez orada qo'shiladi.");
-  if($("xt-all")) $("xt-all").onclick = () => toast("Umumiy natijalar tez orada qo'shiladi.");
+  if($("xt-all")) $("xt-all").onclick = () => renderBoard(t, R, keyPdf);
   $("xt-sol").onclick = () => renderSolutions(t, R, keyPdf, 0);
   if($("xshare")) $("xshare").onclick = async () => {
     try{
@@ -490,6 +490,55 @@ function renderResult(t, R, keyPdf){
   };
   if($("xkey")) $("xkey").onclick = () => renderPdfView(t, R, keyPdf, "k", 0);
   if($("eopen")) $("eopen").onclick = () => renderEssay(t, R, keyPdf);
+}
+async function renderBoard(t, R, keyPdf){
+  stopTimer(); showExam();
+  zoom = 1; pdfDoc = null; goPage = 0;
+  const bs = "flex:1;height:50px;border-radius:14px;font:700 15px system-ui,sans-serif;cursor:pointer;";
+  const zb = "width:44px;height:44px;border-radius:12px;border:1.5px solid var(--line2);background:#fff;color:var(--text);font:700 20px system-ui,sans-serif;cursor:pointer;padding:0";
+  box(`<div class="rh"><button id="xback" type="button" class="ibtn" aria-label="Orqaga">${BACK}</button><div style="flex:1;min-width:0"><b>Umumiy natijalar</b><small>${esc(t.subject)} · ${esc(t.title)}</small></div><span id="xpg" style="font-size:14px;font-weight:700;color:var(--muted)"></span></div>` +
+    `<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px"><button id="xpv" type="button" aria-label="Oldingi sahifa" style="${zb}">‹</button><button id="zm" type="button" aria-label="Kichraytirish" style="${zb}">−</button><span id="zv" style="min-width:56px;text-align:center;font-size:15px;font-weight:700">100%</span><button id="zp" type="button" aria-label="Kattalashtirish" style="${zb}">+</button><button id="xnx" type="button" aria-label="Keyingi sahifa" style="${zb}">›</button></div>` +
+    `<div class="pdfbox" id="xpages" style="height:58vh"><p class="sub">Natijalar tayyorlanmoqda...</p></div>` +
+    `<div style="display:flex;gap:10px;margin-top:12px"><button id="xdl" type="button" style="${bs}border:0;background:#2440d6;color:#fff">Yuklab olish</button><button id="xbot" type="button" style="${bs}border:1.5px solid var(--line2);background:#fff;color:var(--text)">Botga yuborish</button></div>`);
+  $("xback").onclick = () => renderResult(t, R, keyPdf);
+  $("zm").onclick = () => setZoom(-0.25);
+  $("zp").onclick = () => setZoom(0.25);
+  $("xpv").onclick = () => pageTo(curPage() - 1);
+  $("xnx").onclick = () => pageTo(curPage() + 1);
+  $("xpages").onscroll = updPg;
+  let b64 = "";
+  $("xdl").onclick = () => {
+    if(!b64){ toast("Natijalar hali tayyor emas."); return; }
+    try{
+      const bin = atob(b64), u8 = new Uint8Array(bin.length);
+      for(let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([u8], {type: "application/pdf"}));
+      a.download = "umumiy_natijalar.pdf";
+      document.body.appendChild(a); a.click(); a.remove();
+      toast("Yuklab olinmasa, «Botga yuborish» tugmasini bosing.");
+    }catch(e){ toast("Yuklab bo'lmadi. «Botga yuborish» tugmasini bosing."); }
+  };
+  $("xbot").onclick = async () => {
+    $("xbot").disabled = true;
+    try{ await call("/api/tests/board", {code: t.code, send: true}); toast("PDF botga yuborildi ✅"); }
+    catch(e){ toast("Yuborib bo'lmadi. Qayta urinib ko'ring."); }
+    $("xbot").disabled = false;
+  };
+  try{
+    const r = await call("/api/tests/board", {code: t.code, send: false});
+    b64 = r.pdf;
+    const bin = atob(b64), u8 = new Uint8Array(bin.length);
+    for(let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    await loadPdfJs();
+    pdfDoc = await pdfjsLib.getDocument({data: u8}).promise;
+    updPg();
+    drawPdf();
+  }catch(e){
+    const w = $("xpages");
+    const m = String((e && e.message) || e);
+    if(w) w.innerHTML = '<p class="sub">' + (m.indexOf("403") >= 0 ? "Umumiy natijalar test vaqti tugagach chiqadi." : m.indexOf("400") >= 0 ? "Natijalar hali hisoblanmagan. Ishtirokchilar yetarli bo'lgach chiqadi." : "Natijalarni ochib bo'lmadi. Qayta urinib ko'ring.") + '</p>';
+  }
 }
 async function renderCert(t, R, keyPdf){
   stopTimer(); showExam();
