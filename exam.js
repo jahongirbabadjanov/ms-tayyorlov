@@ -348,7 +348,7 @@ async function renderPdfView(t, R, keyPdf, kind, q){
     `<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px"><button id="xpv" type="button" aria-label="Oldingi sahifa" style="${zb}">‹</button><button id="zm" type="button" aria-label="Kichraytirish" style="${zb}">−</button><span id="zv" style="min-width:56px;text-align:center;font-size:15px;font-weight:700">100%</span><button id="zp" type="button" aria-label="Kattalashtirish" style="${zb}">+</button><button id="xnx" type="button" aria-label="Keyingi sahifa" style="${zb}">›</button></div>` +
     `<div class="pdfbox" id="xpages" style="height:52vh"><p class="sub">PDF yuklanmoqda...</p></div>` +
     `<div style="display:flex;gap:10px;margin-top:12px"><button id="xa" type="button" style="${bs}border:0;background:#2440d6;color:#fff">${kind === "k" ? "Savolni ko'rish" : "Yechimini ko'rish"}</button><button id="xb2" type="button" style="${bs}border:0;background:#ffc629;color:#0f1a4d">${kind === "k" ? "Barcha savollar" : "Barcha yechimlar"}</button></div>` +
-    `<div style="display:flex;gap:10px;margin-top:10px"><button id="xdl" type="button" style="${bs}border:1.5px solid var(--line2);background:#fff;color:var(--text)">Yuklab olish</button><button id="xbot" type="button" style="${bs}border:1.5px solid var(--line2);background:#fff;color:var(--text)">Botga yuborish</button></div>`);
+    `<div style="display:flex;gap:10px;margin-top:10px"><button id="xdl" type="button" style="${bs}border:0;background:#2440d6;color:#fff">Yuklab olish</button></div>`);
   const other = kind === "k" ? "q" : "k";
   $("xback").onclick = () => renderSolutions(t, R, keyPdf, q || 0);
   $("zm").onclick = () => setZoom(-0.25);
@@ -357,12 +357,16 @@ async function renderPdfView(t, R, keyPdf, kind, q){
   $("xnx").onclick = () => pageTo(curPage() + 1);
   $("xa").onclick = () => renderPdfView(t, R, keyPdf, other, q);
   $("xb2").onclick = () => renderPdfView(t, R, keyPdf, other, 0);
-  $("xdl").onclick = () => { if(tg.openLink) tg.openLink(url); else window.open(url, "_blank"); };
-  $("xbot").onclick = async () => {
-    $("xbot").disabled = true;
-    try{ await call("/api/tests/pdf_send", {code: t.code, kind}); toast("PDF botga yuborildi ✅"); }
-    catch(e){ toast("Yuborib bo'lmadi. Qayta urinib ko'ring."); }
-    $("xbot").disabled = false;
+  $("xdl").onclick = async () => {
+    $("xdl").disabled = true;
+    try{
+      await call("/api/tests/pdf_send", {code: t.code, kind});
+      toast("Yuklab olish uchun bot chatiga yuborildi 😊");
+      setTimeout(() => { try{ tg.close(); }catch(e){} }, 1400);
+    }catch(e){
+      toast("Yuborib bo'lmadi. Qayta urinib ko'ring.");
+      $("xdl").disabled = false;
+    }
   };
   $("xpages").onscroll = updPg;
   try{
@@ -499,7 +503,7 @@ async function renderBoard(t, R, keyPdf){
   box(`<div class="rh"><button id="xback" type="button" class="ibtn" aria-label="Orqaga">${BACK}</button><div style="flex:1;min-width:0"><b>Umumiy natijalar</b><small>${esc(t.subject)} · ${esc(t.title)}</small></div><span id="xpg" style="font-size:14px;font-weight:700;color:var(--muted)"></span></div>` +
     `<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px"><button id="xpv" type="button" aria-label="Oldingi sahifa" style="${zb}">‹</button><button id="zm" type="button" aria-label="Kichraytirish" style="${zb}">−</button><span id="zv" style="min-width:56px;text-align:center;font-size:15px;font-weight:700">100%</span><button id="zp" type="button" aria-label="Kattalashtirish" style="${zb}">+</button><button id="xnx" type="button" aria-label="Keyingi sahifa" style="${zb}">›</button></div>` +
     `<div class="pdfbox" id="xpages" style="height:58vh"><p class="sub">Natijalar tayyorlanmoqda...</p></div>` +
-    `<div style="display:flex;gap:10px;margin-top:12px"><button id="xdl" type="button" style="${bs}border:0;background:#2440d6;color:#fff">Yuklab olish</button><button id="xbot" type="button" style="${bs}border:1.5px solid var(--line2);background:#fff;color:var(--text)">Botga yuborish</button></div>`);
+    `<div style="display:flex;gap:10px;margin-top:12px"><button id="xdl" type="button" style="${bs}border:0;background:#2440d6;color:#fff">Yuklab olish</button></div>`);
   $("xback").onclick = () => renderResult(t, R, keyPdf);
   $("zm").onclick = () => setZoom(-0.25);
   $("zp").onclick = () => setZoom(0.25);
@@ -508,22 +512,16 @@ async function renderBoard(t, R, keyPdf){
   $("xpages").onscroll = updPg;
   let b64 = "";
   $("xdl").onclick = () => {
-    if(!b64){ toast("Natijalar hali tayyor emas."); return; }
+  $("xdl").onclick = async () => {
+    $("xdl").disabled = true;
     try{
-      const bin = atob(b64), u8 = new Uint8Array(bin.length);
-      for(let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(new Blob([u8], {type: "application/pdf"}));
-      a.download = "umumiy_natijalar.pdf";
-      document.body.appendChild(a); a.click(); a.remove();
-      toast("Yuklab olinmasa, «Botga yuborish» tugmasini bosing.");
-    }catch(e){ toast("Yuklab bo'lmadi. «Botga yuborish» tugmasini bosing."); }
-  };
-  $("xbot").onclick = async () => {
-    $("xbot").disabled = true;
-    try{ await call("/api/tests/board", {code: t.code, send: true}); toast("PDF botga yuborildi ✅"); }
-    catch(e){ toast("Yuborib bo'lmadi. Qayta urinib ko'ring."); }
-    $("xbot").disabled = false;
+      await call("/api/tests/board", {code: t.code, send: true});
+      toast("Yuklab olish uchun bot chatiga yuborildi 😊");
+      setTimeout(() => { try{ tg.close(); }catch(e){} }, 1400);
+    }catch(e){
+      toast("Yuborib bo'lmadi. Qayta urinib ko'ring.");
+      $("xdl").disabled = false;
+    }
   };
   try{
     const r = await call("/api/tests/board", {code: t.code, send: false});
