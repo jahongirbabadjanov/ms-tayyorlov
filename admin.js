@@ -357,15 +357,86 @@ async function resScreen(){
     if(tgw && tgw.showConfirm) tgw.showConfirm(msg, ok => { if(ok) go(); }); else go();
   };
 }
+
+/* ---- Tushgan savollar ---- */
+document.head.insertAdjacentHTML("beforeend", "<style id=\"pp-css\">"
++ ".pdc{display:flex;align-items:center;gap:12px;border:2px dashed #cfd8f3;background:#fbfcff;border-radius:22px;padding:14px;margin-top:10px}.pdc .nm{flex:1;min-width:0}.pdc .nm b{display:block;font-size:17px;color:#0f1a4d}.pdc .nm small{display:block;color:#6b7699;font-size:14px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}"
++ ".pdc .yb{flex:none;border:0;border-radius:16px;background:#e8edfb;color:#2440d6;font:800 16px system-ui,sans-serif;padding:14px 20px;cursor:pointer}.pdc.ok{border-color:#9fdcb8;background:#f4fcf7}.pdc.ok .yb{background:#dff5e8;color:#1a8a4a}"
++ ".adm2 label{display:block;margin:12px 2px 6px;font-weight:700;font-size:14px;color:#6b7699}.adm2 .fi{width:100%;background:#fff;border:1.5px solid #dfe5f6;border-radius:14px;padding:13px;font:600 15.5px system-ui,sans-serif;color:#0f1a4d}"
++ ".adm2 .big2{display:flex;align-items:center;justify-content:center;width:100%;height:54px;margin-top:14px;border:0;border-radius:16px;background:#2440d6;color:#fff;font:800 16px system-ui,sans-serif;cursor:pointer;box-shadow:0 8px 16px rgba(36,64,214,.3)}.adm2 .big2.s{background:#e8edfb;color:#2440d6;box-shadow:none}.adm2 .big2[disabled]{opacity:.5}"
++ ".adm2 .pr2{display:flex;gap:8px;margin-top:10px}.adm2 .pr2 button{flex:1;height:42px;border:0;border-radius:12px;font:800 14px system-ui,sans-serif;cursor:pointer;background:#e8edfb;color:#2440d6}.adm2 .pr2 .d{background:#fde4e5;color:#b3262b}.adm2 .perr{color:#b3262b;font-weight:700;font-size:14px;margin-top:8px}"
++ "</style>");
+const fsz = n => n > 1048576 ? (n / 1048576).toFixed(1).replace(".", ",") + " MB" : Math.max(1, Math.round(n / 1024)) + " KB";
+async function pastScreen(){
+  const body = sub("Tushgan savollar", "Qo'shish, narx, o'chirish");
+  const J = window.MSJ;
+  const draw = async () => {
+    body.innerHTML = '<p class="sub">Yuklanmoqda...</p>';
+    let r; try{ r = await call("/api/papers/list", {}); }catch(e){ body.innerHTML = '<p class="sub">Yuklab bo\'lmadi.</p>'; return; }
+    body.innerHTML = '<button class="big2" id="pnew" type="button" style="margin-top:0">＋ Yangi qo\'shish</button>'
+      + (r.papers.length ? `<h3>Hammasi (${r.papers.length})</h3>` + r.papers.map(p => `<div class="pc" data-id="${p.id}"><div class="pr"><div style="flex:none">${J ? J.jelly(J.keyOf(p.subject), 46, 25) : ""}</div><div class="pm"><b>${esc2(p.title)}</b><small>${esc2(p.subject)}${p.test_code ? " · test " + esc2(p.test_code) : ""}</small><span class="amt" style="font-size:17px">${p.price ? som(p.price) + " so'm" : "Bepul"}</span></div></div><div class="pr2"><button data-a="price" type="button">Narxini o'zgartirish</button><button class="d" data-a="del" type="button">O'chirish</button></div></div>`).join("") : '<div class="empty" style="margin-top:20px"><div>📭</div><b>Hali tushgan savol yo\'q</b>«Yangi qo\'shish» ni bosing.</div>');
+    body.querySelector("#pnew").onclick = form;
+  };
+  body.onclick = async e => {
+    const b = e.target.closest("[data-a]"); if(!b) return;
+    const c = b.closest(".pc"), id = +c.dataset.id;
+    if(b.dataset.a === "del"){
+      const go = async () => { try{ await call("/api/papers/delete", {id}); toastA("O'chirildi"); draw(); }catch(x){ toastA("O'chirib bo'lmadi"); } };
+      if(tgw && tgw.showConfirm) tgw.showConfirm("O'chirilsinmi?", ok => { if(ok) go(); }); else go();
+    }else if(b.dataset.a === "price"){
+      if(c.querySelector(".pe")) return;
+      const row = document.createElement("div"); row.className = "pr2 pe";
+      row.innerHTML = '<input class="fi" id="pnp" type="number" inputmode="numeric" placeholder="Yangi narx (0 = bepul)" style="flex:2"><button data-a="psave" type="button">Saqlash</button>';
+      c.appendChild(row);
+    }else if(b.dataset.a === "psave"){
+      const v = parseInt(c.querySelector("#pnp").value, 10);
+      if(isNaN(v) || v < 0){ toastA("Narxni yozing"); return; }
+      try{ await call("/api/admin/paper_upd", {id, price: v}); toastA("Saqlandi"); draw(); }catch(x){ toastA("Saqlab bo'lmadi"); }
+    }
+  };
+  function form(){
+    body.onclick = null;
+    let file = null;
+    body.innerHTML = '<label>Fan</label><select class="fi" id="psb">' + SUBJECTS.map(n => `<option>${esc2(n)}</option>`).join("") + '</select>'
+      + '<label>Nomi</label><input class="fi" id="ptt" placeholder="Masalan: 2025-yil Tarix savollari">'
+      + '<label>Narxi (so\'m, 0 = bepul)</label><input class="fi" id="ppr" type="number" inputmode="numeric" value="0">'
+      + '<label>Test kodi (ixtiyoriy)</label><input class="fi" id="pcd" inputmode="numeric" maxlength="4" placeholder="Masalan: 1234">'
+      + '<label>Fayl</label><div class="pdc" id="pdc"><div style="flex:none">' + jl("#2440d6", '<path d="M6 3h8l5 5v13H6Z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/>', 52, 27) + '</div><div class="nm"><b>Savollar PDF</b><small id="pnm">Yuklanmagan</small></div><button class="yb" type="button" id="pyb">Yuklash</button></div>'
+      + '<input type="file" id="pfl" accept="application/pdf" style="display:none"><div class="perr" id="perr"></div>'
+      + '<button class="big2" id="padd" type="button">Qo\'shish</button><button class="big2 s" id="pbk" type="button">Orqaga</button>';
+    body.querySelector("#pyb").onclick = () => body.querySelector("#pfl").click();
+    body.querySelector("#pdc").onclick = e => { if(e.target.id !== "pyb") body.querySelector("#pfl").click(); };
+    body.querySelector("#pfl").onchange = e => {
+      const f = e.target.files[0]; if(!f) return;
+      if(f.size > 15 * 1024 * 1024){ body.querySelector("#perr").textContent = "Fayl 15 MB dan katta."; return; }
+      file = f; body.querySelector("#perr").textContent = "";
+      body.querySelector("#pnm").textContent = f.name + " · " + fsz(f.size);
+      body.querySelector("#pdc").classList.add("ok"); body.querySelector("#pyb").textContent = "O'zgartirish";
+    };
+    body.querySelector("#pbk").onclick = draw;
+    body.querySelector("#padd").onclick = async () => {
+      const er = body.querySelector("#perr"), t = body.querySelector("#ptt").value.trim();
+      if(!t){ er.textContent = "Nomini yozing."; return; }
+      if(!file){ er.textContent = "PDF faylni yuklang."; return; }
+      const b = body.querySelector("#padd"); b.disabled = true; er.textContent = "";
+      try{
+        const data = await new Promise((ok, no) => { const rd = new FileReader(); rd.onload = () => ok(rd.result); rd.onerror = no; rd.readAsDataURL(file); });
+        await call("/api/papers/create", {subject: body.querySelector("#psb").value, title: t, price: parseInt(body.querySelector("#ppr").value, 10) || 0, test_code: body.querySelector("#pcd").value.trim(), data});
+        toastA("Qo'shildi"); draw();
+      }catch(x){ er.textContent = String(x.message).includes("400") ? "Bunday kodli test topilmadi yoki ma'lumot noto'g'ri." : "Yuklab bo'lmadi. Qayta urinib ko'ring."; b.disabled = false; }
+    };
+  }
+  draw();
+}
 const tgw = window.Telegram && Telegram.WebApp;
 window.ADMIN_SECTIONS = window.ADMIN_SECTIONS || {};
 window.ADMIN_SECTIONS.pay = () => paysScreen("pend", "topup");
 window.ADMIN_SECTIONS.wd = () => paysScreen("pend", "withdraw");
 window.ADMIN_SECTIONS.msg = msgScreen;
 window.ADMIN_SECTIONS.res = resScreen;
+window.ADMIN_SECTIONS.past = pastScreen;
 
 document.addEventListener("click", e => {
   if(e.target.closest(".hello")) openPanel();
 });
 })();
-                                                            
