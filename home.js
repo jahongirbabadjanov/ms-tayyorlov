@@ -1,10 +1,16 @@
 (function(){
 document.head.insertAdjacentHTML("beforeend", "<style>"
-+ ".hero.lr{cursor:pointer}.hero.lr .lrt{display:flex;align-items:center;gap:10px;margin:8px 0 6px}"
-+ ".hero.lr .lrt b{font-size:44px;line-height:1;color:#fff}"
-+ ".hero.lr .lv{padding:5px 14px;border-radius:99px;background:var(--yel);color:var(--navy);font-weight:800;font-size:15px}"
++ ".hero.lr{cursor:pointer;position:relative;overflow:hidden;background:linear-gradient(150deg,#4b6bff,#2440d6 55%,#1a2fa8);box-shadow:0 14px 26px rgba(36,64,214,.33)}"
++ ".hero.lr .gl{position:absolute;left:4px;right:4px;top:4px;height:42%;border-radius:22px 22px 60% 60%/22px 22px 24% 24%;background:linear-gradient(rgba(255,255,255,.35),rgba(255,255,255,.03));pointer-events:none}"
++ ".hero.lr .hin{position:relative}"
++ ".hero.lr .lrt{display:flex;align-items:center;gap:10px;margin:6px 0 4px}"
++ ".hero.lr .lrt b{font-size:54px;line-height:1;font-weight:900;color:#fff}"
++ ".hero.lr .lv{padding:4px 14px;border-radius:99px;background:#ffc928;color:#0f1a4d;font-weight:900;font-size:22px;box-shadow:0 3px 8px rgba(0,0,0,.2),inset 0 2px 1px rgba(255,255,255,.6)}"
 + ".hero.lr .df{padding:5px 11px;border-radius:99px;background:rgba(255,255,255,.2);color:#fff;font-weight:800;font-size:13px}"
-+ ".hero.lr .lrc{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.hero.lr .lrc span{padding:4px 10px;border-radius:99px;background:rgba(255,255,255,.16);color:#fff;font-size:12px;font-weight:700}"
++ ".hero.lr .lrs{display:block;color:#fff;font-weight:700;font-size:14px;margin-bottom:12px}"
++ ".hero.lr .lrc{display:flex;gap:8px}"
++ ".hero.lr .lrc div{flex:1;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:16px;padding:10px;box-shadow:inset 0 1px 1px rgba(255,255,255,.3)}"
++ ".hero.lr .lrc b{display:block;font-size:19px;color:#fff}.hero.lr .lrc small{font-size:11.5px;color:#fff;opacity:.85}"
 + "</style>");
 const cm = x => String(x).replace(".", ",");
 const dt = s => { try{ return new Date(s).toLocaleDateString("ru-RU"); }catch(e){ return ""; } };
@@ -23,11 +29,12 @@ function drawHero(){
     return;
   }
   const df = r.diff != null ? `<span class="df">${r.diff > 0 ? "↑ +" : r.diff < 0 ? "↓ " : "= "}${cm(r.diff)}</span>` : "";
-  const ch = [`<span>${r.raw}/${r.total} to'g'ri</span>`];
-  if(r.pct != null) ch.push(`<span>${cm(r.pct)}%</span>`);
-  if(r.rank != null && r.of) ch.push(`<span>O'rin ${r.rank}/${r.of}</span>`);
+  const ch = [];
+  ch.push(`<div><b>${r.pct != null ? cm(r.pct) + "%" : "—"}</b><small>test foizi</small></div>`);
+  ch.push(`<div><b>${r.raw}/${r.total}</b><small>to'g'ri javob</small></div>`);
+  ch.push(`<div><b>${r.rank != null && r.of ? r.rank + "/" + r.of : "—"}</b><small>umumiy o'rin</small></div>`);
   h.classList.add("lr"); h.dataset.code = r.code;
-  h.innerHTML = `<small>Oxirgi natijangiz</small><div class="lrt"><b>${cm(val(r))}</b>${r.level ? `<span class="lv">${esc(r.level)}</span>` : ""}${df}</div><small>${esc(r.subject)} · ${esc(r.title)} · ${dt(r.date)}</small><div class="lrc">${ch.join("")}</div>`;
+  h.innerHTML = `<div class="gl"></div><div class="hin"><small>Oxirgi natijangiz</small><div class="lrt"><b>${cm(val(r))}</b>${r.level ? `<span class="lv">${esc(r.level)}</span>` : ""}${df}</div><span class="lrs">${esc(r.subject)} · ${esc(r.title)} · ${dt(r.date)}</span><div class="lrc">${ch.join("")}</div></div>`;
 }
 
 async function loadRes(){
