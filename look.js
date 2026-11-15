@@ -28,6 +28,7 @@ const jelly = (k, size, s) => {
   return `<span class="jl" style="width:${size}px;height:${size}px;border-radius:${Math.round(size * .3)}px;background:linear-gradient(160deg,${c}ee,${c} 45%,${c}bb);box-shadow:0 8px 14px ${c}55,inset 0 -4px 7px rgba(0,0,0,.22),inset 0 1.5px 1px rgba(255,255,255,.7)"><span class="jg"></span><span class="ji">${S(P[k], s)}</span></span>`;
 };
 
+window.MSJ = {jelly: jelly, keyOf: keyOf};
 document.head.insertAdjacentHTML("beforeend", "<style>"
 + ".jl{position:relative;display:grid;place-items:center;flex:none;color:#fff}"
 + ".jl .jg{position:absolute;left:3px;right:3px;top:3px;height:48%;border-radius:12px 12px 60% 60%/12px 12px 28% 28%;background:linear-gradient(rgba(255,255,255,.6),rgba(255,255,255,.04));pointer-events:none}"
@@ -86,4 +87,4 @@ renderTests = function(){
 renderChips();
 renderTests();
 })();
-  
+                                                                                                                                                                                                                                                                                                                         
