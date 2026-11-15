@@ -137,47 +137,213 @@ async function paysScreen(tab, kind){
 
 const EMO = {"Matematika":"🧮","Fizika":"⚛️","Kimyo":"🧪","Biologiya":"🧬","Tarix":"🏛️","Geografiya":"🌍","Ingliz":"🔤","Ona tili":"📖"};
 const emo = s => { for(const k in EMO) if((s || "").startsWith(k)) return EMO[k]; return "📘"; };
+document.head.insertAdjacentHTML("beforeend", "<style id=\"bc-css\">"
++ ".bc .seg{display:flex;background:#e8edfb;border-radius:14px;padding:4px;gap:4px;margin-bottom:6px}.bc .seg div{flex:1;text-align:center;padding:10px 4px;border-radius:11px;font-weight:800;font-size:14px;color:#5a6a99;cursor:pointer}.bc .seg div.on{background:#fff;color:#2440d6;box-shadow:0 2px 6px rgba(36,64,214,.15)}"
++ ".bc .chips{display:flex;gap:8px;flex-wrap:wrap}.bc .chip{padding:10px 14px;border-radius:99px;border:1.5px solid #dfe5f6;background:#fff;font:700 14px system-ui,sans-serif;color:#0f1a4d;cursor:pointer}.bc .chip.on{background:#2440d6;border-color:#2440d6;color:#fff}.bc .chip.s{padding:8px 12px;font-size:13px;background:#f3f6ff}.bc .chip.s.on{background:#2440d6}"
++ ".bc .ta{width:100%;background:#fff;border:1.5px solid #dfe5f6;border-radius:20px;padding:14px;font:600 15.5px/1.4 system-ui,sans-serif;color:#0f1a4d}.bc input,.bc select{width:100%;background:#fff;border:1.5px solid #dfe5f6;border-radius:14px;padding:12px;font:600 15px system-ui,sans-serif;color:#0f1a4d;margin-top:8px}"
++ ".bc .tools{display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap}.bc .tl2{padding:8px 12px;border-radius:12px;background:#e8edfb;color:#2440d6;font:800 13px system-ui,sans-serif;border:0;cursor:pointer}.bc .cnt{margin-left:auto;color:#8a93b3;font-size:12px;font-weight:700}"
++ ".bc .prev{background:#dbe4f7;border-radius:24px;padding:12px}.bc .prev .lb{font-weight:800;font-size:12.5px;color:#5a6a99;margin:2px 4px 8px}.bc .bub{background:#fff;border-radius:6px 18px 18px 18px;padding:12px;font:600 15px/1.35 system-ui,sans-serif;color:#0f1a4d}.bc .bub img{width:100%;border-radius:12px;margin-bottom:10px;display:block}.bc .bub .bt{margin-top:10px;height:44px;border-radius:12px;background:#e8edfb;color:#2440d6;font-weight:800;display:grid;place-items:center}.bc .bub .tm{font-size:11px;color:#8a93b3;text-align:right;margin-top:6px}"
++ ".bc .cn{margin:14px 0;padding:14px;border-radius:16px;background:#fff1cc;color:#8a5a00;font-weight:800;font-size:15px;display:flex;justify-content:space-between;align-items:center}.bc .cn b{font-size:19px}"
++ ".bc .btns{display:flex;gap:10px}.bc .btns button{flex:1;height:54px;border-radius:16px;border:0;font:800 16px system-ui,sans-serif;cursor:pointer}.bc .btns .a{background:#e8edfb;color:#2440d6}.bc .btns .b{background:#2440d6;color:#fff;box-shadow:0 8px 16px rgba(36,64,214,.3)}.bc .btns .r{background:#fde4e5;color:#b3262b}.bc .btns button[disabled]{opacity:.5}"
++ ".bc .bar{height:14px;border-radius:99px;background:#e8edfb;overflow:hidden;margin:14px 0 10px}.bc .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#1f9d55,#38c777);transition:width .4s}"
++ ".bc .bign{font-size:44px;font-weight:900;line-height:1;color:#0f1a4d}.bc .stt{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.bc .stt div{background:#f6f8ff;border-radius:14px;padding:10px}.bc .stt b{display:block;font-size:20px}.bc .stt small{color:#6b7699;font-size:12px}"
++ ".bc .tg{display:inline-block;padding:3px 9px;border-radius:99px;font-size:12px;font-weight:800}.bc .tg.g{background:#dff5e8;color:#1a8a4a}.bc .tg.y{background:#fff1cc;color:#8a5a00}.bc .tg.r{background:#fde4e5;color:#b3262b}"
++ ".bc .note{padding:10px 12px;border-radius:14px;background:#e8edfb;color:#2440d6;font-weight:700;font-size:13px;margin-top:8px}.bc .pc.tp{cursor:pointer}.bc .xx{float:right;border:0;background:none;color:#b3262b;font-size:18px;font-weight:800;cursor:pointer}"
++ "</style>");
+const STATUS = {sending:["Yuborilmoqda", "y"], stopping:["To'xtatilmoqda", "y"], done:["Yuborildi", "g"], stopped:["To'xtatilgan", "r"], scheduled:["Rejalashtirilgan", "y"], cancelled:["Bekor qilingan", "r"]};
+const BUILTIN = [
+  ["🚀 Yangi test", "📢 Yangi test: {test}\n{fan} · {n} ta savol · {min} daqiqa\nTest kodi: {kod}"],
+  ["⏰ Eslatma", "⏰ {ism}, {test} tez orada boshlanadi. Tayyor turing!"],
+  ["📣 Ishlamaganlarga", "{emoji} {ism}, {test} hali ishlanmagan. Hozir boshlang va darajangizni bilib oling!"],
+  ["🏆 Natijalar tayyor", "🏆 {test} natijalari tayyor! Umumiy natijalar va tahlilni ilovada ko'ring."]
+];
+const fillT = (s, t) => s.replace(/\{test\}/g, t.title).replace(/\{fan\}/g, t.subject).replace(/\{n\}/g, t.question_count).replace(/\{min\}/g, t.duration_minutes).replace(/\{kod\}/g, t.code).replace(/\{emoji\}/g, emo(t.subject));
+const shrink = file => new Promise((res, rej) => {
+  const fr = new FileReader();
+  fr.onload = () => { const im = new Image(); im.onload = () => { const k = Math.min(1, 1280 / Math.max(im.width, im.height)); const c = document.createElement("canvas"); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); res(c.toDataURL("image/jpeg", .82)); }; im.onerror = rej; im.src = fr.result; };
+  fr.onerror = rej; fr.readAsDataURL(file);
+});
+const hmm = x => { try{ return new Date(x).toLocaleString("ru-RU", {day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit"}); }catch(e){ return ""; } };
+
 async function msgScreen(){
   const body = sub("Xabar yuborish", "Test belgilab yoki ommaviy");
+  body.classList.add("bc");
+  body.innerHTML = '<p class="sub">Yuklanmoqda...</p>';
+  let M;
+  try{ M = await call("/api/admin/bc_meta", {}); }catch(e){ body.innerHTML = '<p class="sub">Yuklab bo\'lmadi.</p>'; return; }
+  if(!M.tests.length){ body.innerHTML = '<div class="empty"><div>📭</div><b>Testlar yo\'q</b></div>'; return; }
+  const S = {tab: "w", t: M.tests[0], aud: "new", fan: false, regOn: false, region: "", bal: false, text: "", btn: "start", link: "", when: "now", at: "", photo: "", edited: false, saveOpen: false};
+  const defText = () => S.aud === "done" ? fillT(BUILTIN[3][1], S.t) : S.aud === "new" ? fillT(BUILTIN[2][1], S.t) : fillT(BUILTIN[0][1], S.t);
+  S.text = defText();
+  const myName = (ME && ME.first_name) || "Jahongir";
+  const tabs = () => `<div class="seg">${[["w", "Yozish"], ["t", "Tayyor matnlar"], ["h", "Tarix"]].map(x => `<div data-tab="${x[0]}" class="${S.tab === x[0] ? "on" : ""}">${x[1]}</div>`).join("")}</div>`;
+  const btnLab = () => S.btn === "start" ? "🚀 Testni boshlash" : S.btn === "res" ? "📊 Natijalarni ko'rish" : S.btn === "link" ? "🔗 Ochish" : "";
+  const prevHtml = () => (S.photo ? `<img src="${S.photo}">` : "") + esc2(S.text.replace(/\{ism\}/g, myName)).replace(/\n/g, "<br>") + (btnLab() ? `<div class="bt">${btnLab()}</div>` : "") + `<div class="tm">${new Date().toLocaleTimeString("ru-RU", {hour: "2-digit", minute: "2-digit"})}</div>`;
+  let cntTimer = 0;
+  const cnt = () => {
+    clearTimeout(cntTimer);
+    cntTimer = setTimeout(async () => {
+      const el = body.querySelector("#bcn"); if(!el) return;
+      el.querySelector("b").textContent = "...";
+      try{ const x = await call("/api/admin/bc_do", {mode: "count", code: S.t.code, audience: S.aud, fan: S.fan, region: S.regOn ? S.region : "", balance: S.bal}); const e2 = body.querySelector("#bcn"); if(e2){ e2.querySelector("b").textContent = som(x.count) + " ta foydalanuvchiga"; e2.dataset.n = x.count; } }catch(e){ const e3 = body.querySelector("#bcn"); if(e3) e3.querySelector("b").textContent = "—"; }
+    }, 350);
+  };
+  const upd = () => { const p = body.querySelector("#bpv"); if(p) p.innerHTML = prevHtml(); const c = body.querySelector("#bch"); if(c) c.textContent = S.text.length + " / 1000"; };
+
+  function renderWrite(){
+    body.innerHTML = tabs()
+      + '<h3 style="margin:12px 2px 7px;font-size:14px;color:#6b7699">Test</h3><div class="pc" style="padding:0;position:relative"><select id="bsel" style="border:0;margin:0;padding:16px 40px 16px 16px;font-weight:800;font-size:16px;appearance:none;background:none">' + M.tests.map(t => `<option value="${esc2(t.code)}"${t.code === S.t.code ? " selected" : ""}>${emo(t.subject)}  ${esc2(t.title)}</option>`).join("") + '</select><span style="position:absolute;right:16px;top:50%;transform:translateY(-50%);color:#6b7699;pointer-events:none">⌄</span></div>'
+      + '<h3 style="margin:14px 2px 7px;font-size:14px;color:#6b7699">Kimga</h3><div class="chips">' + [["new", "Ishlamaganlarga"], ["all", "Hammaga"], ["done", "Ishlaganlarga"]].map(a => `<div class="chip${S.aud === a[0] ? " on" : ""}" data-aud="${a[0]}">${a[1]}</div>`).join("") + '</div>'
+      + '<div class="chips" style="margin-top:8px"><div class="chip s' + (S.fan ? " on" : "") + '" data-f="fan">📚 Faqat ' + esc2(S.t.subject) + ' o\'qiganlar</div><div class="chip s' + (S.regOn ? " on" : "") + '" data-f="reg">📍 Viloyat bo\'yicha</div><div class="chip s' + (S.bal ? " on" : "") + '" data-f="bal">💰 Balansi bor</div></div>'
+      + (S.regOn ? '<select id="breg"><option value="">Viloyatni tanlang</option>' + M.regions.map(r => `<option${r === S.region ? " selected" : ""}>${esc2(r)}</option>`).join("") + '</select>' : "")
+      + '<h3 style="margin:14px 2px 7px;font-size:14px;color:#6b7699;display:flex;justify-content:space-between">Xabar matni <i style="font-style:normal;font-size:12px;color:#8a93b3">{ism} — ismini qo\'yadi</i></h3><textarea class="ta" id="btx" rows="5"></textarea>'
+      + '<div class="tools"><button class="tl2" data-t="ism" type="button">{ism}</button><button class="tl2" data-t="emo" type="button">😀 Emoji</button><button class="tl2" data-t="img" type="button">🖼 Rasm' + (S.photo ? " ✓" : "") + '</button><button class="tl2" data-t="save" type="button">💾 Saqlash</button><span class="cnt" id="bch"></span></div>'
+      + '<input type="file" id="bfile" accept="image/*" style="display:none">'
+      + (S.saveOpen ? '<div style="display:flex;gap:8px"><input id="bsn" placeholder="Matn nomi (masalan: Eslatma)" maxlength="40"><button class="tl2" data-t="savego" type="button" style="margin-top:8px;flex:none">Saqlash</button></div>' : "")
+      + '<h3 style="margin:14px 2px 7px;font-size:14px;color:#6b7699">Tugma</h3><div class="chips">' + [["start", "🚀 Testni boshlash"], ["res", "📊 Natijalar"], ["link", "🔗 Havola"], ["none", "Tugmasiz"]].map(a => `<div class="chip${S.btn === a[0] ? " on" : ""}" data-btn="${a[0]}">${a[1]}</div>`).join("") + '</div>'
+      + (S.btn === "link" ? '<input id="blk" placeholder="https://..." value="' + esc2(S.link) + '">' : "")
+      + '<h3 style="margin:14px 2px 7px;font-size:14px;color:#6b7699">Qachon</h3><div class="seg"><div data-when="now" class="' + (S.when === "now" ? "on" : "") + '">Hozir</div><div data-when="later" class="' + (S.when === "later" ? "on" : "") + '">⏰ Vaqt belgilash</div></div>'
+      + (S.when === "later" ? '<input type="datetime-local" id="bat" value="' + esc2(S.at) + '">' : "")
+      + '<h3 style="margin:14px 2px 7px;font-size:14px;color:#6b7699">Ko\'rinishi</h3><div class="prev"><div class="lb">Bot chatida shunday chiqadi</div><div class="bub" id="bpv"></div></div>'
+      + '<div class="cn" id="bcn"><span>Yuboriladi</span><b>...</b></div>'
+      + '<div class="btns"><button class="a" id="bme" type="button">Avval o\'zimga</button><button class="b" id="bgo" type="button">' + (S.when === "later" ? "Rejalashtirish" : "Yuborish") + '</button></div>';
+    body.querySelector("#btx").value = S.text;
+    upd(); cnt();
+  }
+
+  const validate = () => {
+    if(!S.text.trim()) return "Xabar matnini yozing";
+    if(S.btn === "link" && !/^https?:\/\//.test(S.link)) return "Havolani to'g'ri yozing (https://...)";
+    if(S.regOn && !S.region) return "Viloyatni tanlang";
+    if(S.when === "later" && (!S.at || new Date(S.at).getTime() < Date.now() + 60000)) return "Kelajakdagi vaqtni belgilang";
+    return "";
+  };
+  const payload = mode => ({mode, code: S.t.code, audience: S.aud, fan: S.fan, region: S.regOn ? S.region : "", balance: S.bal, text: S.text, button: S.btn, link: S.link, photo: S.photo, run_at: mode === "send" && S.when === "later" ? new Date(S.at).toISOString() : ""});
+
+  async function progress(id){
+    body.innerHTML = '<p class="sub">Yuklanmoqda...</p>';
+    const draw = r => {
+      const total = r.total || 0, done = (r.ok || 0) + (r.fail || 0), pct = total ? Math.round(done * 100 / total) : 0;
+      const st = STATUS[r.status] || [r.status, "y"];
+      const live = r.status === "sending" || r.status === "stopping";
+      body.innerHTML = `<div class="pc" style="padding:18px"><div style="display:flex;justify-content:space-between;align-items:baseline"><span class="bign">${som(done)}</span><span style="font-weight:800;color:#6b7699">/ ${som(total)}</span></div><div class="bar"><i style="width:${pct}%"></i></div><div style="display:flex;justify-content:space-between;align-items:center"><span class="tg ${st[1]}">${st[0]}</span><span style="color:#6b7699;font-weight:700;font-size:13px">${esc2(r.title)}</span></div><div class="stt"><div><b style="color:#1f9d55">${som(r.ok || 0)}</b><small>yetib bordi</small></div><div><b style="color:#b3262b">${som(r.fail || 0)}</b><small>yetmadi</small></div><div><b>${som(Math.max(0, total - done))}</b><small>navbatda</small></div></div></div>`
+        + (live ? '<div class="note">Ilovani yopsangiz ham yuborish davom etadi. Tugagach botga xabar keladi.</div>' : (r.clicks ? `<div class="note">👆 ${som(r.clicks)} kishi tugmani bosdi</div>` : ""))
+        + `<div class="btns" style="margin-top:14px">${live ? '<button class="r" id="bstop" type="button">To\'xtatish</button>' : ""}<button class="b" id="bback" type="button">${live ? "Yopish" : "Tarixga"}</button></div>`;
+      const s1 = body.querySelector("#bstop"); if(s1) s1.onclick = async () => { s1.disabled = true; try{ await call("/api/admin/bc_act", {id, act: "stop"}); }catch(e){} };
+      body.querySelector("#bback").onclick = () => { S.tab = "h"; histShow(); };
+    };
+    const tick = async () => {
+      if(!document.body.contains(body)) return;
+      let r; try{ r = await call("/api/admin/bc_get", {id}); }catch(e){ setTimeout(tick, 3000); return; }
+      draw(r);
+      if(r.status === "sending" || r.status === "stopping") setTimeout(tick, 2000);
+    };
+    tick();
+  }
+
+  async function histShow(){
+    body.innerHTML = tabs() + '<p class="sub" style="margin-top:12px">Yuklanmoqda...</p>';
+    let r; try{ r = await call("/api/admin/bc_list", {}); }catch(e){ body.innerHTML = tabs() + '<p class="sub">Yuklab bo\'lmadi.</p>'; return; }
+    body.innerHTML = tabs() + (r.items.length ? r.items.map(x => {
+      const st = STATUS[x.status] || [x.status, "y"];
+      const lab = x.status === "scheduled" ? "⏰ " + hmm(x.run_at) : st[0];
+      return `<div class="pc tp" data-bid="${x.id}"><div class="r1"><div><b>${esc2(x.title)}</b><small>${{all: "Hammaga", new: "Ishlamaganlarga", done: "Ishlaganlarga"}[x.audience] || ""} · ${hmm(x.created_at)}</small></div><span class="tg ${st[1]}">${lab}</span></div><div style="display:flex;gap:14px;margin-top:8px;font-size:13.5px"><span>👥 ${som(x.total || 0)}</span><span style="color:#1a8a4a">✅ ${som(x.ok || 0)}</span><span style="color:#b3262b">🚫 ${som(x.fail || 0)}</span><span style="color:#2440d6">👆 ${som(x.clicks || 0)}</span></div>${x.status === "scheduled" ? `<div class="btns" style="margin-top:10px"><button class="r" data-cancel="${x.id}" type="button" style="height:44px">Bekor qilish</button></div>` : ""}</div>`;
+    }).join("") + '<div class="note">«👆» — tugmani bosganlar soni.</div>' : '<div class="empty" style="margin-top:20px"><div>📭</div><b>Hali xabar yuborilmagan</b></div>');
+  }
+
+  function tplShow(){
+    const own = M.templates || [];
+    body.innerHTML = tabs() + '<h3 style="margin:14px 2px 7px;font-size:14px;color:#6b7699">Tanlang</h3><div class="pc">'
+      + BUILTIN.map((b, i) => `<div class="pc tp" data-tp="b${i}" style="box-shadow:none;border:0;border-bottom:1px solid #eef1fb;border-radius:0;margin:0"><b>${b[0]}</b><small>${esc2(fillT(b[1], S.t))}</small></div>`).join("")
+      + own.map(o => `<div class="pc tp" data-tp="o${o.id}" style="box-shadow:none;border:0;border-bottom:1px solid #eef1fb;border-radius:0;margin:0"><button class="xx" data-del="${o.id}" type="button">✕</button><b>💾 ${esc2(o.name)}</b><small>${esc2(o.text)}</small></div>`).join("") + '</div>'
+      + '<div class="note">Tanlangan matn «Yozish» bo\'limiga tushadi, uni o\'zgartirishingiz mumkin. O\'z matningizni «Yozish» da 💾 Saqlash bilan qo\'shing.</div>';
+  }
+
+  const show = () => { if(S.tab === "w") renderWrite(); else if(S.tab === "t") tplShow(); else histShow(); };
+  body.onclick = async e => {
+    const tb = e.target.closest("[data-tab]");
+    if(tb){ S.tab = tb.dataset.tab; show(); return; }
+    const au = e.target.closest("[data-aud]");
+    if(au){ S.aud = au.dataset.aud; if(!S.edited) S.text = defText(); renderWrite(); return; }
+    const fl = e.target.closest("[data-f]");
+    if(fl){ const k = fl.dataset.f; if(k === "fan") S.fan = !S.fan; else if(k === "bal") S.bal = !S.bal; else { S.regOn = !S.regOn; if(!S.regOn) S.region = ""; } renderWrite(); return; }
+    const bn = e.target.closest("[data-btn]");
+    if(bn){ S.btn = bn.dataset.btn; renderWrite(); return; }
+    const wn = e.target.closest("[data-when]");
+    if(wn){ S.when = wn.dataset.when; renderWrite(); return; }
+    const tl = e.target.closest("[data-t]");
+    if(tl){
+      const k = tl.dataset.t, ta = body.querySelector("#btx");
+      if(k === "ism" || k === "emo"){ const add = k === "ism" ? "{ism}" : "😊"; const a = ta.selectionStart || ta.value.length; ta.value = ta.value.slice(0, a) + add + ta.value.slice(ta.selectionEnd || a); S.text = ta.value; S.edited = true; upd(); }
+      else if(k === "img"){ if(S.photo){ S.photo = ""; renderWrite(); } else body.querySelector("#bfile").click(); }
+      else if(k === "save"){ S.saveOpen = !S.saveOpen; renderWrite(); }
+      else if(k === "savego"){ const nm = body.querySelector("#bsn").value.trim(); if(!nm){ toastA("Nom yozing"); return; } try{ await call("/api/admin/tpl_save", {name: nm, text: S.text}); M = await call("/api/admin/bc_meta", {}); S.saveOpen = false; toastA("Saqlandi"); renderWrite(); }catch(x){ toastA("Saqlab bo'lmadi"); } }
+      return;
+    }
+    const tp = e.target.closest("[data-tp]");
+    if(tp){
+      const del = e.target.closest("[data-del]");
+      if(del){ try{ await call("/api/admin/tpl_del", {id: +del.dataset.del}); M = await call("/api/admin/bc_meta", {}); tplShow(); }catch(x){ toastA("O'chirib bo'lmadi"); } return; }
+      const id = tp.dataset.tp;
+      S.text = id[0] === "b" ? fillT(BUILTIN[+id.slice(1)][1], S.t) : fillT((M.templates.find(o => o.id === +id.slice(1)) || {text: S.text}).text, S.t);
+      S.edited = true; S.tab = "w"; renderWrite(); return;
+    }
+    const ca = e.target.closest("[data-cancel]");
+    if(ca){ try{ await call("/api/admin/bc_act", {id: +ca.dataset.cancel, act: "cancel"}); toastA("Bekor qilindi"); histShow(); }catch(x){ toastA("Xatolik"); } return; }
+    const hi = e.target.closest("[data-bid]");
+    if(hi){ progress(+hi.dataset.bid); return; }
+    if(e.target.id === "bme"){
+      const er = validate(); if(er && !er.startsWith("Kelajak")){ toastA(er); return; }
+      e.target.disabled = true;
+      try{ await call("/api/admin/bc_do", payload("self")); toastA("O'zingizga yuborildi"); }catch(x){ toastA("Yuborib bo'lmadi"); }
+      e.target.disabled = false; return;
+    }
+    if(e.target.id === "bgo"){
+      const er = validate(); if(er){ toastA(er); return; }
+      const go = async () => {
+        const b = body.querySelector("#bgo"); if(b) b.disabled = true;
+        try{
+          const x = await call("/api/admin/bc_do", payload("send"));
+          if(x.scheduled){ toastA("Rejalashtirildi"); S.tab = "h"; histShow(); } else progress(x.id);
+        }catch(x){ toastA("Yuborib bo'lmadi"); if(b) b.disabled = false; }
+      };
+      const n = (body.querySelector("#bcn") || {dataset: {}}).dataset.n || "";
+      const msg = S.when === "later" ? "Xabar " + hmm(new Date(S.at)) + " da yuborilsinmi?" : "Xabar " + n + " kishiga yuborilsinmi?";
+      if(tgw && tgw.showConfirm) tgw.showConfirm(msg, ok => { if(ok) go(); }); else go();
+    }
+  };
+  body.oninput = e => {
+    if(e.target.id === "btx"){ S.text = e.target.value; S.edited = true; upd(); }
+    else if(e.target.id === "blk") S.link = e.target.value.trim();
+    else if(e.target.id === "bat") S.at = e.target.value;
+  };
+  body.onchange = async e => {
+    if(e.target.id === "bsel"){ S.t = M.tests.find(t => t.code === e.target.value) || S.t; if(!S.edited) S.text = defText(); renderWrite(); }
+    else if(e.target.id === "breg"){ S.region = e.target.value; cnt(); }
+    else if(e.target.id === "bfile" && e.target.files[0]){ try{ S.photo = await shrink(e.target.files[0]); renderWrite(); }catch(x){ toastA("Rasm ochilmadi"); } }
+  };
+  renderWrite();
+}
+
+/* ---- Natija e'loni ---- */
+async function resScreen(){
+  const body = sub("Natija e'loni", "Test tugagach natijalarni yuborish");
   body.innerHTML = '<p class="sub">Yuklanmoqda...</p>';
   let r;
-  try{ r = await call("/api/admin/msg_tests", {}); }catch(e){ body.innerHTML = '<p class="sub">Yuklab bo\'lmadi.</p>'; return; }
-  if(!r.tests.length){ body.innerHTML = '<div class="empty"><div>📭</div><b>Testlar yo\'q</b></div>'; return; }
-  let aud = "new", cur = r.tests[0];
-  const AU = [["all", "Hammaga"], ["new", "Ishlamaganlarga"], ["done", "Ishlaganlarga"]];
-  const textFor = (t, a) => {
-    const e = emo(t.subject);
-    if(a === "new") return e + " " + t.title + " hali ishlanmagan. Hozir boshlang va darajangizni bilib oling!";
-    if(a === "done") return "🏆 " + t.title + " natijalari tayyor! Umumiy natijalar va tahlilni ilovada ko'ring.";
-    return "📢 Yangi test: " + t.title + "\n" + t.subject + " · " + t.question_count + " ta savol · " + t.duration_minutes + " daqiqa\nTest kodi: " + t.code;
-  };
-  const lab = a => a === "done" ? "📊 Natijalarni ko'rish" : "🚀 Testni boshlash";
-  body.innerHTML = '<h3 style="margin-top:4px">Test</h3><div class="pc" style="padding:0;position:relative"><select id="msl" style="width:100%;border:0;background:none;padding:16px 40px 16px 16px;font:800 16px system-ui,sans-serif;color:var(--text);appearance:none;border-radius:20px"></select><span style="position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none">⌄</span></div>'
-    + '<h3>Kimga</h3><div id="mau" style="display:flex;gap:8px"></div>'
-    + '<h3>Xabar matni</h3><textarea id="mtx" rows="5" style="width:100%;border:1.5px solid var(--line2);border-radius:20px;padding:14px;font:16px system-ui,sans-serif;font-weight:600;background:#fff;color:var(--text)"></textarea>'
-    + '<h3>Ko\'rinishi</h3><div style="background:#e8edfb;border-radius:24px;padding:12px"><div style="font-weight:800;font-size:13px;color:var(--muted);margin:2px 4px 8px">Bot chatida shunday chiqadi</div><div style="background:#fff;border-radius:18px;padding:14px"><div id="mpv" style="white-space:pre-wrap;font-size:15.5px;font-weight:600;color:var(--text)"></div><div id="mbt" style="margin-top:12px;height:46px;border-radius:12px;background:#2440d6;color:#fff;font-weight:800;display:grid;place-items:center"></div></div></div>'
-    + '<div id="mcn" style="margin:14px 0;padding:14px;border-radius:16px;background:#fff1cc;color:#8a5a00;font-weight:800;font-size:16px"></div>'
-    + '<div style="display:flex;gap:10px"><button type="button" id="mcx" style="flex:1;height:54px;border:0;border-radius:16px;background:#e8edfb;color:#2440d6;font:800 16px system-ui,sans-serif">Bekor qilish</button><button type="button" id="msnd" style="flex:1;height:54px;border:0;border-radius:16px;background:#2440d6;color:#fff;font:800 16px system-ui,sans-serif">Yuborish</button></div>';
-  const sel = body.querySelector("#msl"), tx = body.querySelector("#mtx"), pv = body.querySelector("#mpv"), cn = body.querySelector("#mcn"), bt = body.querySelector("#mbt");
-  sel.innerHTML = r.tests.map(t => `<option value="${esc2(t.code)}">${emo(t.subject)}  ${esc2(t.title)}</option>`).join("");
-  const draw = () => { body.querySelector("#mau").innerHTML = AU.map(a => `<button class="chip${aud === a[0] ? " on" : ""}" data-a="${a[0]}" type="button" style="flex:1;min-width:0;justify-content:center;padding:12px 4px;font-size:14px">${a[1]}</button>`).join(""); };
-  const fill = () => { tx.value = textFor(cur, aud); pv.textContent = tx.value; bt.textContent = lab(aud); };
-  const cnt = async () => {
-    cn.textContent = "Hisoblanmoqda...";
-    try{ const x = await call("/api/admin/broadcast", {code: cur.code, audience: aud, send: false}); cn.innerHTML = "Yuboriladi: <b style=\"font-size:18px\">" + som(x.count) + " ta</b> foydalanuvchiga"; cn.dataset.n = x.count; }catch(e){ cn.textContent = ""; }
-  };
-  draw(); fill(); cnt();
-  sel.onchange = () => { cur = r.tests.find(t => t.code === sel.value) || cur; fill(); cnt(); };
-  tx.oninput = () => { pv.textContent = tx.value; };
-  body.querySelector("#mau").onclick = e => { const a = e.target.closest("[data-a]"); if(a){ aud = a.dataset.a; draw(); fill(); cnt(); } };
-  body.querySelector("#mcx").onclick = () => { const w = body.closest(".adm2"); if(w) w.remove(); };
-  body.querySelector("#msnd").onclick = () => {
+  try{ r = await call("/api/admin/bc_meta", {}); }catch(e){ body.innerHTML = '<p class="sub">Yuklab bo\'lmadi.</p>'; return; }
+  const fm = x => { try{ return new Date(x).toLocaleString("ru-RU", {day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit"}); }catch(e){ return ""; } };
+  body.innerHTML = '<div class="note" style="margin:0 0 12px">Test tugagach natijalar o\'zi avtomatik yuboriladi. Bu yerdan qo\'lda ham yuborish mumkin: har bir ishtirokchiga o\'z natijasi va «Umumiy natijalar» tugmasi boradi.</div>'
+    + r.tests.map(t => `<div class="pc" data-c="${esc2(t.code)}"><div class="r1"><div><b>${esc2(t.title)}</b><small>${esc2(t.subject)} · kod ${esc2(t.code)}${t.ends_at ? " · tugash " + fm(t.ends_at) : ""}</small></div></div><div class="ac"><button class="ok" type="button" data-a="send" style="background:#2440d6">Natijalarni yuborish</button></div></div>`).join("");
+  body.onclick = e => {
+    const b = e.target.closest('[data-a="send"]'); if(!b) return;
+    const code = b.closest(".pc").dataset.c;
     const go = async () => {
-      const b = body.querySelector("#msnd"); b.disabled = true;
-      try{ const x = await call("/api/admin/broadcast", {code: cur.code, audience: aud, text: tx.value, send: true}); toastA("Yuborilmoqda: " + x.count + " kishiga. Tugagach botga xabar keladi."); const w = body.closest(".adm2"); if(w) w.remove(); }
-      catch(x){ toastA("Yuborib bo'lmadi"); b.disabled = false; }
+      b.disabled = true;
+      try{ const x = await call("/api/admin/natija", {code}); toastA("Yuborilmoqda: " + x.count + " kishiga"); }
+      catch(x){ toastA("Yuborib bo'lmadi"); }
+      b.disabled = false;
     };
-    const msg = "Xabar " + (cn.dataset.n || "") + " kishiga yuborilsinmi?";
+    const msg = code + " testi natijalari ishtirokchilarga yuborilsinmi?";
     if(tgw && tgw.showConfirm) tgw.showConfirm(msg, ok => { if(ok) go(); }); else go();
   };
 }
