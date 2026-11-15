@@ -64,7 +64,7 @@ document.addEventListener("click", e => {
   };
   const code = pick();
   if(!code) return;
-  let tries = 0, done = false;
+  let tries = 0, done = false, counted = false;
   const examOpen = () => !$("v-exam").classList.contains("hidden");
   const attempt = () => {
     if(done) return;
@@ -77,6 +77,7 @@ document.addEventListener("click", e => {
       if(tries < 80) setTimeout(attempt, 500);
       return;
     }
+    if(!counted){ counted = true; const bq = new URLSearchParams(location.search).get("b"); if(bq && +bq > 0){ try{ call("/api/bc/click", {id: +bq}).catch(() => {}); }catch(e){} } }
     if(tries === 1){ const d = document.createElement("div"); d.textContent = code + "-test ochilmoqda..."; d.style.cssText = "position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:#0f1a4d;color:#fff;padding:10px 16px;border-radius:14px;font:700 14px system-ui,sans-serif;z-index:99"; document.body.appendChild(d); setTimeout(() => d.remove(), 2500); }
     $("codein").value = code; $("codego").click();
     /* tekshiruv: 2 soniyadan so'ng oyna ochilmagan bo'lsa, qayta urinamiz */
@@ -85,4 +86,3 @@ document.addEventListener("click", e => {
   setTimeout(attempt, 600);
 })();
 })();
- 
