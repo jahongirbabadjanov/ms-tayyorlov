@@ -18,8 +18,8 @@ document.head.insertAdjacentHTML("beforeend", "<style>"
 + ".jl .jg{position:absolute;left:3px;right:3px;top:3px;height:48%;border-radius:12px 12px 60% 60%/12px 12px 28% 28%;background:linear-gradient(rgba(255,255,255,.6),rgba(255,255,255,.04));pointer-events:none}"
 + ".jl .ji{position:relative;display:grid;filter:drop-shadow(0 2px 2px rgba(0,0,0,.28))}"
 + ".adm{position:fixed;inset:0;z-index:60;background:linear-gradient(#f3f6ff,#fbf3ea);overflow:auto;padding:14px 16px 40px}"
-+ ".adm .ah{display:flex;align-items:center;gap:12px;margin-bottom:12px}.adm .ah b{font-size:21px;color:var(--text)}.adm .ah small{display:block;color:var(--muted);font-size:13px}"
-+ ".adm .ab{width:44px;height:44px;border-radius:14px;border:0;background:#e8edfb;color:#2440d6;font:700 22px system-ui,sans-serif;cursor:pointer}"
++ ".adm .ah,.adm2 .ah{display:flex;align-items:center;gap:12px;margin-bottom:12px}.adm .ah b,.adm2 .ah b{font-size:21px;color:var(--text)}.adm .ah small,.adm2 .ah small{display:block;color:var(--muted);font-size:13px}"
++ ".adm .ab,.adm2 .ab{width:44px;height:44px;border-radius:14px;border:0;background:#e8edfb;color:#2440d6;font:700 22px system-ui,sans-serif;cursor:pointer}"
 + ".adm .st{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}"
 + ".adm .st div{background:#fff;border:1px solid var(--line);border-radius:16px;padding:10px 12px;box-shadow:0 4px 12px rgba(36,64,214,.06)}"
 + ".adm .st b{display:block;font-size:19px;color:var(--text)}.adm .st small{color:var(--muted);font-size:12px}"
@@ -55,8 +55,91 @@ async function openPanel(){
     if(h) h(d, s); else toastA("Bu bo'lim tez orada qo'shiladi");
   });
 }
+
+/* ---- Pastki oyna (bo'lim ichi) ---- */
+document.head.insertAdjacentHTML("beforeend", "<style>"
++ ".adm2{position:fixed;inset:0;z-index:70;background:linear-gradient(#f3f6ff,#fbf3ea);overflow:auto;padding:14px 16px 40px}"
++ ".adm2 .pc{background:#fff;border:1px solid var(--line);border-radius:20px;padding:14px;margin-bottom:10px;box-shadow:0 4px 12px rgba(36,64,214,.06)}"
++ ".adm2 .pc .r1{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.adm2 .pc b{font-size:16px;color:var(--text)}"
++ ".adm2 .pc small{display:block;color:var(--muted);font-size:12.5px;margin-top:3px}"
++ ".adm2 .amt{font-weight:900;font-size:18px;color:#2440d6;white-space:nowrap}"
++ ".adm2 .kd{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:800;margin-bottom:6px}"
++ ".adm2 .kd.t{background:#dff5e8;color:#1a8a4a}.adm2 .kd.w{background:#fff1cc;color:#8a5a00}"
++ ".adm2 .ac{display:flex;gap:8px;margin-top:10px}.adm2 .ac button{flex:1;height:46px;border:0;border-radius:14px;font:800 15px system-ui,sans-serif;cursor:pointer}"
++ ".adm2 .ac .ok{background:#1f9d55;color:#fff}.adm2 .ac .no{background:#fde4e5;color:#b3262b}.adm2 .ac .ph{flex:none;width:100%;background:#e8edfb;color:#2440d6;margin-top:0}"
++ ".adm2 .stt{font-weight:800;font-size:13px;margin-top:8px}.adm2 .stt.ok{color:#1a8a4a}.adm2 .stt.no{color:#b3262b}"
++ ".adm2 .pr{display:flex;gap:12px}.adm2 .th{flex:none;width:92px;min-height:110px;border:0;border-radius:16px;background:linear-gradient(160deg,#eef1fb,#d3daf0);color:#6b7699;font:700 13px system-ui,sans-serif;text-align:center;cursor:pointer;padding:6px}.adm2 .th span{display:block;margin-top:4px;font-size:11px;font-weight:600;opacity:.8}.adm2 .th.n{display:grid;place-items:center;cursor:default;word-break:break-all;font-size:12px}"
++ ".adm2 .pm{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.adm2 .pm .amt{margin-top:6px;font-size:21px;color:var(--text)}.adm2 .pm .kd{align-self:flex-start}"
++ ".adm2 h3{margin:14px 2px 8px;font-size:15px;color:var(--muted)}"
++ "</style>");
+function sub(title, note){
+  const d = document.createElement("div");
+  d.className = "adm2";
+  d.innerHTML = `<div class="ah"><button class="ab" type="button" aria-label="Orqaga">‹</button><div><b>${title}</b><small>${note || ""}</small></div></div><div class="body"></div>`;
+  d.querySelector(".ab").onclick = () => d.remove();
+  document.body.appendChild(d);
+  return d.querySelector(".body");
+}
+const esc2 = x => String(x == null ? "" : x).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const dtm = s => { try{ return new Date(s).toLocaleString("ru-RU", {day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit"}); }catch(e){ return ""; } };
+const ago = s => { const m = Math.floor((Date.now() - Date.parse(s)) / 60000); if(isNaN(m)) return ""; if(m < 1) return "hozirgina"; if(m < 60) return m + " daqiqa oldin"; if(m < 1440) return Math.floor(m / 60) + " soat oldin"; return Math.floor(m / 1440) + " kun oldin"; };
+function lightbox(src){
+  const d = document.createElement("div");
+  d.style.cssText = "position:fixed;inset:0;z-index:90;background:rgba(10,15,40,.92);display:flex;flex-direction:column";
+  d.innerHTML = '<div style="display:flex;justify-content:flex-end;padding:12px"><button type="button" style="width:44px;height:44px;border:0;border-radius:14px;background:rgba(255,255,255,.18);color:#fff;font:700 22px system-ui,sans-serif">✕</button></div><div style="flex:1;overflow:auto;text-align:center;padding:0 8px 24px"><img src="' + src + '" style="max-width:100%;border-radius:12px;background:#fff"></div>';
+  d.querySelector("button").onclick = () => d.remove();
+  document.body.appendChild(d);
+}
+async function showChek(id, btn){
+  btn.disabled = true;
+  try{
+    const r = await call("/api/admin/pay_img", {id});
+    if(r.img) lightbox(r.img);
+    else if(r.sent) toastA("Bu fayl PDF, bot chatiga yuborildi");
+  }catch(x){ toastA("Chek ochilmadi"); }
+  btn.disabled = false;
+}
+async function paysScreen(tab){
+  tab = tab || "pend";
+  const body = sub("To'lovlar", "Cheklarni tasdiqlash");
+  body.innerHTML = '<p class="sub">Yuklanmoqda...</p>';
+  let r;
+  try{ r = await call("/api/admin/pays", {}); }catch(e){ body.innerHTML = '<p class="sub">Yuklab bo\'lmadi. Qayta urinib ko\'ring.</p>'; return; }
+  const pend = r.items.filter(x => x.status === "pending"), okk = r.items.filter(x => x.status === "ok"), nno = r.items.filter(x => x.status === "no");
+  const card = p => {
+    const t = p.kind === "topup";
+    const thumb = t && p.has_photo ? `<button class="th" type="button" data-a="img"><div style="font-size:26px">🧾</div>chek rasmi<span>bosib ko'ring</span></button>` : `<div class="th n">${t ? "chek<br>botda" : "💳<br>" + esc2(p.info || "")}</div>`;
+    let h = `<div class="pc" data-id="${p.id}"><div class="pr">${thumb}<div class="pm"><span class="kd ${t ? "t" : "w"}">${t ? "To'ldirish" : "Yechib olish"} #${p.id}</span><b>${esc2(p.name) || "id " + p.user_id}</b><small>ID ${p.user_id}${p.created_at ? " · " + ago(p.created_at) : ""}</small><span class="amt">${som(p.amount)} so'm</span></div></div>`;
+    if(p.status === "pending") h += `<div class="ac"><button class="ok" type="button" data-a="ok">Tasdiqlash</button><button class="no" type="button" data-a="no">Rad etish</button></div>`;
+    else h += `<div class="stt ${p.status === "ok" ? "ok" : "no"}">${p.status === "ok" ? "✅ Tasdiqlangan" : "❌ Rad etilgan"}</div>`;
+    return h + "</div>";
+  };
+  const list = tab === "pend" ? pend : tab === "ok" ? okk : nno;
+  const tb = (k, n, c) => `<button class="chip${tab === k ? " on" : ""}" data-tab="${k}" type="button">${n}${c ? `<em>${c}</em>` : ""}</button>`;
+  body.innerHTML = `<div class="chips" style="margin-bottom:6px">${tb("pend", "Kutilmoqda", pend.length)}${tb("ok", "Tasdiqlangan", okk.length)}${tb("no", "Rad etilgan", nno.length)}</div>`
+    + (list.length ? list.map(card).join("") : `<div class="empty" style="margin-top:20px"><div>${tab === "pend" ? "✅" : "📭"}</div><b>${tab === "pend" ? "Kutilayotgan so'rov yo'q" : "Hozircha bo'sh"}</b>${tab === "pend" ? "Yangi to'lov kelsa, botga ham xabar keladi." : "So'nggi 15 ta ko'rib chiqilgan so'rov shu yerda chiqadi."}</div>`);
+  body.onclick = async e => {
+    const tbn = e.target.closest("[data-tab]");
+    if(tbn){ const w = body.closest(".adm2"); if(w) w.remove(); paysScreen(tbn.dataset.tab); return; }
+    const b = e.target.closest("[data-a]"); if(!b) return;
+    const c = b.closest(".pc"), id = +c.dataset.id, a = b.dataset.a;
+    if(a === "img"){ showChek(id, b); return; }
+    const go = async () => {
+      c.querySelectorAll("button").forEach(x => x.disabled = true);
+      try{ await call("/api/admin/pay_act", {id, ok: a === "ok"}); toastA(a === "ok" ? "Tasdiqlandi" : "Rad etildi"); }
+      catch(x){ toastA(String(x.message).includes("409") ? "Bu so'rov allaqachon ko'rib chiqilgan" : "Xatolik. Qayta urinib ko'ring."); }
+      const w = body.closest(".adm2"); if(w) w.remove(); paysScreen(tab);
+    };
+    const msg = a === "ok" ? "So'rov #" + id + " tasdiqlansinmi?" : "So'rov #" + id + " rad etilsinmi?";
+    if(tgw && tgw.showConfirm) tgw.showConfirm(msg, ok => { if(ok) go(); }); else go();
+  };
+}
+const tgw = window.Telegram && Telegram.WebApp;
+window.ADMIN_SECTIONS = window.ADMIN_SECTIONS || {};
+window.ADMIN_SECTIONS.pay = () => paysScreen("pend");
+
 document.addEventListener("click", e => {
   if(e.target.closest(".hello")) openPanel();
 });
 })();
-                     
+  
