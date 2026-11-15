@@ -228,7 +228,7 @@ function renderNew(r){
     catch(e){ const m = String(e.message); $("xerr").textContent = m.includes("402") ? "Balans yetarli emas." : m.includes("403") ? "Test hozir ochiq emas (vaqti tugagan yoki hali boshlanmagan)." : "Xatolik. Qayta urinib ko'ring."; $("xstart").disabled = false; }
   }
 }
-
+  
 function renderSheet(r){
   CUR = r;
   const t = r.test, saved = loadDraft(t.code);
