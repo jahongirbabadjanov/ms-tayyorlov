@@ -52,13 +52,37 @@ document.addEventListener("click", e => {
   const c = e.target.closest("#v-tests .hero.lr");
   if(c && c.dataset.code){ $("codein").value = c.dataset.code; $("codego").click(); }
 });
-const qc = new URLSearchParams(location.search).get("code");
-if(qc && /^\d{4}$/.test(qc)){
-  let n = 0;
-  const iv = setInterval(() => {
-    n++;
-    if(!$("v-tests").classList.contains("hidden")){ clearInterval(iv); $("codein").value = qc; $("codego").click(); }
-    else if(n > 60) clearInterval(iv);
-  }, 500);
-}
+/* Deep link: botdagi "Testni boshlash" tugmasi aynan shu testning oynasini ochadi */
+(function(){
+  const pick = () => {
+    const q = new URLSearchParams(location.search);
+    let c = q.get("code") || q.get("tgWebAppStartParam") || "";
+    if(!c){ const m = (location.hash || "").match(/[?&#]code=(\d{4})/); if(m) c = m[1]; }
+    if(!c){ try{ c = (window.Telegram.WebApp.initDataUnsafe.start_param) || ""; }catch(e){} }
+    const m2 = String(c).match(/(\d{4})/);
+    return m2 ? m2[1] : "";
+  };
+  const code = pick();
+  if(!code) return;
+  let tries = 0, done = false;
+  const examOpen = () => !$("v-exam").classList.contains("hidden");
+  const attempt = () => {
+    if(done) return;
+    tries++;
+    if(examOpen()){
+      /* boshqa test emas, aynan shu testmi — kod oynada ko'rinadi, shuning uchun qayta ochmaymiz */
+      done = true; return;
+    }
+    if(typeof ME === "undefined" || !ME || $("v-tests").classList.contains("hidden")){
+      if(tries < 80) setTimeout(attempt, 500);
+      return;
+    }
+    if(tries === 1){ const d = document.createElement("div"); d.textContent = code + "-test ochilmoqda..."; d.style.cssText = "position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:#0f1a4d;color:#fff;padding:10px 16px;border-radius:14px;font:700 14px system-ui,sans-serif;z-index:99"; document.body.appendChild(d); setTimeout(() => d.remove(), 2500); }
+    $("codein").value = code; $("codego").click();
+    /* tekshiruv: 2 soniyadan so'ng oyna ochilmagan bo'lsa, qayta urinamiz */
+    setTimeout(() => { if(!examOpen() && tries < 6){ attempt(); } else done = true; }, 2200);
+  };
+  setTimeout(attempt, 600);
 })();
+})();
+ 
