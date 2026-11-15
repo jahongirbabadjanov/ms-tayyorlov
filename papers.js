@@ -34,6 +34,7 @@ async function loadPapers(show){
 }
 
 function adminForm(){
+  return;
   if(!ADMIN || $("pform")) return;
   const h = document.createElement("div");
   h.className = "card"; h.id = "pform";
@@ -118,3 +119,4 @@ $("tlist").addEventListener("click", e => {
   const p = PP.find(x => x.id === +c.dataset.id); if(p) openSheet(p);
 });
 })();
+      
