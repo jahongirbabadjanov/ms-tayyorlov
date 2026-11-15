@@ -21,6 +21,10 @@ document.head.insertAdjacentHTML("beforeend", "<style>"
 + ".adm .ah,.adm2 .ah{display:flex;align-items:center;gap:12px;margin-bottom:12px}.adm .ah b,.adm2 .ah b{font-size:21px;color:var(--text)}.adm .ah small,.adm2 .ah small{display:block;color:var(--muted);font-size:13px}"
 + ".adm .ab,.adm2 .ab{flex:none;width:44px;height:44px;border-radius:14px;border:0;background:#e8edfb;color:#2440d6;font:700 22px system-ui,sans-serif;cursor:pointer}"
 + ".adm .ah>div{flex:1;min-width:0}.adm .pill{flex:none;padding:8px 14px;border-radius:99px;background:#0f1a4d;color:#ffc629;font:900 13px system-ui,sans-serif;letter-spacing:.04em}"
++ ".adm .uc{position:relative;overflow:hidden;border-radius:26px;padding:16px;color:#fff;background:linear-gradient(150deg,#4b6bff,#2440d6 55%,#1a2fa8);box-shadow:0 14px 26px rgba(36,64,214,.33);margin-bottom:18px}.adm .uc .gl{position:absolute;left:4px;right:4px;top:4px;height:40%;border-radius:22px 22px 60% 60%/22px 22px 24% 24%;background:linear-gradient(rgba(255,255,255,.3),rgba(255,255,255,.02));pointer-events:none}.adm .uc .in{position:relative}"
++ ".adm .uc .h1{display:flex;justify-content:space-between;align-items:center;font:700 14px system-ui,sans-serif;opacity:.95}.adm .uc .up{background:#38d17a;color:#053d1c;font:800 13px system-ui,sans-serif;padding:5px 11px;border-radius:99px;opacity:1;white-space:nowrap}"
++ ".adm .uc .h2{display:flex;align-items:flex-end;gap:12px;margin-top:2px}.adm .uc .h2 b{font-size:54px;line-height:1;font-weight:900}.adm .uc .sp{flex:1;display:flex;align-items:flex-end;gap:5px;height:48px}.adm .uc .sp i{flex:1;border-radius:6px 6px 3px 3px;background:rgba(255,255,255,.25);min-height:6px}.adm .uc .sp i:last-child{background:linear-gradient(#ffd966,#ff9a3d)}"
++ ".adm .uc .m3{display:flex;gap:8px;margin-top:12px}.adm .uc .m3 div{flex:1;background:rgba(255,255,255,.17);border:1px solid rgba(255,255,255,.28);border-radius:14px;padding:9px 10px;box-shadow:inset 0 1px 1px rgba(255,255,255,.25)}.adm .uc .m3 b{display:block;font-size:18px;white-space:nowrap}.adm .uc .m3 small{font-size:11.5px;opacity:.85}"
 + ".adm .big{display:flex;align-items:baseline;gap:10px;margin:8px 2px 12px}.adm .big b{font-size:46px;line-height:1;font-weight:900;color:var(--text);letter-spacing:-.02em}.adm .big span{color:var(--muted);font-size:17px;font-weight:600;flex:1}"
 + ".adm .big em{font-style:normal;background:#dff5e8;color:#1a8a4a;font:800 14px system-ui,sans-serif;padding:7px 11px;border-radius:99px;white-space:nowrap}"
 + ".adm .st3{display:flex;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:18px}.adm .st3 div{flex:1;padding:12px 12px 12px 0}.adm .st3 div+div{border-left:1px solid var(--line);padding-left:14px}.adm .st3 b{display:block;white-space:nowrap;font-size:21px;font-weight:900;color:var(--text)}.adm .st3 small{color:var(--muted);font-size:13px}"
@@ -33,28 +37,34 @@ const esc2 = x => String(x == null ? "" : x).replace(/[&<>"]/g, c => ({"&":"&amp
 const som = n => n == null ? "—" : Number(n).toLocaleString("ru-RU");
 let busy = false;
 function toastA(m){ const d = document.createElement("div"); d.textContent = m; d.style.cssText = "position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:#0f1a4d;color:#fff;padding:10px 16px;border-radius:14px;font:700 14px system-ui,sans-serif;z-index:99;max-width:90%;text-align:center"; document.body.appendChild(d); setTimeout(() => d.remove(), 2200); }
-async function openPanel(){
-  if(busy || document.getElementById("adm")) return;
-  busy = true;
-  let s;
-  try{ s = await call("/api/admin/stats", {}); }
-  catch(e){ busy = false; return; }
-  busy = false;
+function openPanel(){
+  if(document.getElementById("adm")) return;
+  let uid = 0; try{ uid = Telegram.WebApp.initDataUnsafe.user.id; }catch(e){}
+  if(uid !== 7336571895) return;
   const d = document.createElement("div");
   d.className = "adm"; d.id = "adm";
   const full = ME ? [ME.first_name, ME.last_name].filter(Boolean).join(" ") : "";
   const mln = n => n == null ? "—" : n >= 1000000 ? (n / 1000000).toFixed(2).replace(".", ",").replace(/,?0+$/, "") + " mln" : som(n);
-  d.innerHTML = `<div class="ah"><button class="ab" id="admx" type="button" aria-label="Orqaga">‹</button><div><b>Admin panel</b><small>${esc2(full)}</small></div><span class="pill">ADMIN</span></div>`
-    + `<div class="big"><b>${som(s.users)}</b><span>foydalanuvchi</span>${s.new_today ? `<em>+${s.new_today} bugun</em>` : ""}</div>`
-    + `<div class="st3"><div><b>${som(s.active_today)}</b><small>bugun faol</small></div><div><b>${som(s.done_total)}</b><small>test ishlagan</small></div><div><b>${mln(s.income_today)}</b><small>bugungi kirim</small></div></div>`
-    + `<div class="gr">` + SEC.map(x => { const bd = x.badge ? x.badge(s) : 0; return `<button class="tl" type="button" data-k="${x.k}">${bd ? "<em>" + bd + "</em>" : ""}${jl(x.c, x.p, 52, 27)}<span><b>${x.n}</b><small>${x.sub(s)}</small></span></button>`; }).join("") + `</div>`;
+  const v = (n, f) => n === undefined ? "…" : (f || som)(n);
+  const paint = s => {
+    const ld = s === null;
+    s = s || {};
+    const g = s.growth || [], mx = Math.max(1, ...g);
+    d.querySelector("#admb").innerHTML = `<div class="uc"><div class="gl"></div><div class="in"><div class="h1"><span>Foydalanuvchilar</span>${s.new_today ? `<span class="up">+${s.new_today} bugun</span>` : ""}</div><div class="h2"><b>${ld ? "…" : som(s.users)}</b><div class="sp">${g.map(x => `<i style="height:${Math.max(12, Math.round(x * 100 / mx))}%"></i>`).join("")}</div></div>`
+      + `<div class="m3"><div><b>${ld ? "…" : som(s.active_today)}</b><small>bugun faol</small></div><div><b>${ld ? "…" : som(s.done_total)}</b><small>test ishlagan</small></div><div><b>${ld ? "…" : mln(s.income_today)}</b><small>bugungi kirim</small></div></div></div></div>`
+      + `<div class="gr">` + SEC.map(x => { const bd = x.badge ? x.badge(s) : 0; return `<button class="tl" type="button" data-k="${x.k}">${bd ? "<em>" + bd + "</em>" : ""}${jl(x.c, x.p, 52, 27)}<span><b>${x.n}</b><small>${x.sub(s)}</small></span></button>`; }).join("") + `</div>`;
+  };
+  d.innerHTML = `<div class="ah"><button class="ab" id="admx" type="button" aria-label="Orqaga">‹</button><div><b>Admin panel</b><small>${esc2(full)}</small></div><span class="pill">ADMIN</span></div><div id="admb"></div>`;
+  paint(null);
   document.body.appendChild(d);
   d.querySelector("#admx").onclick = () => d.remove();
+  let last = {};
   d.addEventListener("click", e => {
     const b = e.target.closest(".tl"); if(!b) return;
     const h = window.ADMIN_SECTIONS && window.ADMIN_SECTIONS[b.dataset.k];
-    if(h) h(d, s); else toastA("Bu bo'lim tez orada qo'shiladi");
+    if(h) h(d, last); else toastA("Bu bo'lim tez orada qo'shiladi");
   });
+  call("/api/admin/stats", {}).then(s => { last = s; if(document.body.contains(d)) paint(s); }).catch(e => { if(String(e.message).includes("403")){ d.remove(); } });
 }
 
 /* ---- Pastki oyna (bo'lim ichi) ---- */
@@ -358,3 +368,4 @@ document.addEventListener("click", e => {
   if(e.target.closest(".hello")) openPanel();
 });
 })();
+                                                            
