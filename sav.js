@@ -13,13 +13,13 @@ function open(){
   d.querySelector(".ab").onclick = () => d.remove();
   document.body.appendChild(d);
   const body = d.querySelector(".body");
-  let items = [], busy = false;
+  let items = [], busy = false, notify = false;
   const draw = () => {
     body.innerHTML = `<input type="file" id="sf" accept="application/pdf" multiple style="display:none"><button id="spick" type="button" class="big2" style="margin-top:0;display:flex;align-items:center;justify-content:center;width:100%;height:54px;border:0;border-radius:16px;background:#2440d6;color:#fff;font:800 16px system-ui,sans-serif">＋ PDF fayllarni tanlash</button>`
     + (items.length ? `<div style="display:flex;gap:8px;margin-top:12px"><input id="sall" type="number" inputmode="numeric" placeholder="Hammasiga narx" style="${IN}flex:1"><button id="sapp" type="button" style="border:0;border-radius:12px;background:#e8edfb;color:#2440d6;font:800 14px system-ui,sans-serif;padding:0 14px">Qo'llash</button></div>` : "")
     + items.map((x, i) => `<div class="pc" data-i="${i}"><div style="display:flex;gap:8px;align-items:center"><b style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(x.f.name)}</b><small style="color:${x.st === "ok" ? "#1a8a4a" : x.st === "err" ? "#b3262b" : "var(--muted)"};font-weight:700;white-space:nowrap">${x.st === "ok" ? "✅ Yuklandi" : x.st === "err" ? "❌ " + esc(x.msg) : x.st === "up" ? "⏳ Yuklanmoqda" : fsz(x.f.size)}</small></div>`
       + (x.st === "ok" ? "" : `<input data-k="title" value="${esc(x.title)}" placeholder="Nomi" style="${IN}width:100%;margin-top:8px"><div style="display:flex;gap:8px;margin-top:8px"><select data-k="subject" style="${IN}flex:2">${SUBJECTS.map(s => `<option${s === x.subject ? " selected" : ""}>${esc(s)}</option>`).join("")}</select><input data-k="price" type="number" inputmode="numeric" value="${x.price}" placeholder="Narx" style="${IN}flex:1"></div>`) + "</div>").join("")
-    + (items.some(x => x.st !== "ok") ? `<button id="sgo" type="button" ${busy ? "disabled" : ""} style="display:flex;align-items:center;justify-content:center;width:100%;height:54px;margin-top:6px;border:0;border-radius:16px;background:#1fa463;color:#fff;font:800 16px system-ui,sans-serif;opacity:${busy ? .5 : 1}">${items.some(x => x.st === "err") ? "Xatolarni qayta yuborish" : "Hammasini yuklash (" + items.filter(x => x.st !== "ok").length + ")"}</button>` : "");
+    + (items.some(x => x.st !== "ok") ? `<label style="display:flex;align-items:center;gap:10px;margin:6px 2px 10px;font:600 14.5px system-ui,sans-serif;color:#0f1a4d"><input id="snt" type="checkbox"${notify ? " checked" : ""} style="width:20px;height:20px">Yuklangach hammaga bitta xabar yuborish</label><button id="sgo" type="button" ${busy ? "disabled" : ""} style="display:flex;align-items:center;justify-content:center;width:100%;height:54px;margin-top:6px;border:0;border-radius:16px;background:#1fa463;color:#fff;font:800 16px system-ui,sans-serif;opacity:${busy ? .5 : 1}">${items.some(x => x.st === "err") ? "Xatolarni qayta yuborish" : "Hammasini yuklash (" + items.filter(x => x.st !== "ok").length + ")"}</button>` : "");
     const q = s => body.querySelector(s);
     q("#spick").onclick = () => q("#sf").click();
     q("#sf").onchange = e => {
@@ -29,6 +29,7 @@ function open(){
       draw();
     };
     if(q("#sapp")) q("#sapp").onclick = () => { const v = parseInt(q("#sall").value, 10); if(isNaN(v) || v < 0) return; items.forEach(x => { if(x.st !== "ok") x.price = v; }); draw(); };
+    if(q("#snt")) q("#snt").onchange = e => { notify = e.target.checked; };
     if(q("#sgo")) q("#sgo").onclick = go;
   };
   body.addEventListener("input", e => { const c = e.target.closest(".pc"); if(!c || !e.target.dataset.k) return; const x = items[+c.dataset.i]; x[e.target.dataset.k] = e.target.dataset.k === "price" ? (parseInt(e.target.value, 10) || 0) : e.target.value; });
@@ -47,6 +48,10 @@ function open(){
     busy = false; draw();
     const n = items.filter(x => x.st === "ok").length;
     toast(n + " / " + items.length + " ta yuklandi");
+    if(notify && n > 0 && !items.some(x => x.st === "err")){
+      notify = false;
+      try{ await call("/api/admin/sav_notify", {n, titles: items.filter(x => x.st === "ok").map(x => x.title)}); toast("Xabar yuborilmoqda..."); }catch(e){ toast("Xabarni yuborib bo'lmadi"); }
+    }
   }
   draw();
 }
@@ -68,4 +73,4 @@ window.ADMIN_SECTIONS.past = function(){
   }, 150);
 };
 })();
-      
+  
