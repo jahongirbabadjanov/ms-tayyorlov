@@ -428,6 +428,32 @@ async function pastScreen(){
   }
   draw();
 }
+
+/* ---- Foydalanuvchilar ---- */
+async function usersScreen(){
+  const body = sub("Foydalanuvchilar", "Qidirish va balans");
+  body.innerHTML = '<input class="fi" id="uq" placeholder="Ism yoki Telegram ID" style="width:100%;background:#fff;border:1.5px solid #dfe5f6;border-radius:14px;padding:13px;font:600 15.5px system-ui,sans-serif"><div id="ul"></div>';
+  const list = body.querySelector("#ul"); let T, cur = {};
+  const load = async () => {
+    list.innerHTML = '<p class="sub">Yuklanmoqda...</p>';
+    try{
+      const r = await call("/api/admin/users", {q: body.querySelector("#uq").value});
+      cur = {}; r.users.forEach(u => cur[u.telegram_id] = u);
+      list.innerHTML = r.users.length ? r.users.map(u => `<div class="pc" data-id="${u.telegram_id}"><div class="pm"><b>${esc2((u.first_name || "") + " " + (u.last_name || ""))}</b><small>${esc2(u.region || "—")} · ID ${u.telegram_id}</small><span class="amt" style="font-size:17px">${som(u.balance || 0)} so'm</span><small>Referal: ${som(u.ref_balance || 0)} so'm</small></div><div class="pr2" style="display:flex;gap:8px;margin-top:10px"><input class="fi" type="number" inputmode="numeric" placeholder="Summa" style="flex:2;background:#fff;border:1.5px solid #dfe5f6;border-radius:12px;padding:10px;font:600 15px system-ui,sans-serif;min-width:0"><button data-s="1" type="button" style="flex:1;border:0;border-radius:12px;background:#dff5e8;color:#1a8a4a;font:800 18px system-ui,sans-serif">＋</button><button data-s="-1" type="button" style="flex:1;border:0;border-radius:12px;background:#fde4e5;color:#b3262b;font:800 18px system-ui,sans-serif">−</button></div></div>`).join("") : '<div class="empty" style="margin-top:20px"><div>🔍</div><b>Topilmadi</b></div>';
+    }catch(e){ list.innerHTML = '<p class="sub">Yuklab bo\'lmadi.</p>'; }
+  };
+  body.querySelector("#uq").oninput = () => { clearTimeout(T); T = setTimeout(load, 450); };
+  list.onclick = async e => {
+    const b = e.target.closest("[data-s]"); if(!b) return;
+    const c = b.closest(".pc"), v = parseInt(c.querySelector("input").value, 10);
+    if(!v || v < 0){ toastA("Summani yozing"); return; }
+    try{
+      const r = await call("/api/admin/user_bal", {id: +c.dataset.id, delta: v * +b.dataset.s});
+      toastA("Balans: " + som(r.balance) + " so'm"); load();
+    }catch(x){ toastA("Bajarilmadi (balans yetmasligi mumkin)"); }
+  };
+  load();
+}
 const tgw = window.Telegram && Telegram.WebApp;
 window.ADMIN_SECTIONS = window.ADMIN_SECTIONS || {};
 window.ADMIN_SECTIONS.pay = () => paysScreen("pend", "topup");
@@ -435,6 +461,7 @@ window.ADMIN_SECTIONS.wd = () => paysScreen("pend", "withdraw");
 window.ADMIN_SECTIONS.msg = msgScreen;
 window.ADMIN_SECTIONS.res = resScreen;
 window.ADMIN_SECTIONS.past = pastScreen;
+window.ADMIN_SECTIONS.users = usersScreen;
 
 document.addEventListener("click", e => {
   if(e.target.closest(".hello")) openPanel();
