@@ -3,7 +3,7 @@ if(window.__dl) return;
 window.__dl = true;
 const pick = () => {
   let c = "";
-  try{ c = new URLSearchParams(location.search).get("code") || ""; }catch(e){}
+  try{ const m0 = String(location.href).split("#")[0].match(/[?&\/]code=(\d{4})/); if(m0) c = m0[1]; }catch(e){}
   if(!c){ const m = (location.hash || "").match(/[?&#]code=(\d{4})/); if(m) c = m[1]; }
   if(!c){ try{ c = Telegram.WebApp.initDataUnsafe.start_param || ""; }catch(e){} }
   const m2 = String(c).match(/(\d{4})/);
@@ -25,7 +25,7 @@ document.body.appendChild(bar);
 const say = t => { bar.textContent = t; };
 const hid = id => { const e = document.getElementById(id); return !e || e.classList.contains("hidden"); };
 let tries = 0, counted = false;
-const bq = (() => { try{ return +new URLSearchParams(location.search).get("b") || 0; }catch(e){ return 0; } })();
+const bq = (() => { try{ const m = String(location.href).split("#")[0].match(/[?&]b=(\d+)/); return m ? +m[1] : 0; }catch(e){ return 0; } })();
 const step = () => {
   tries++;
   const examOpen = !hid("v-exam");
