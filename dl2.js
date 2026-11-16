@@ -10,15 +10,7 @@ const pick = () => {
   return m2 ? m2[1] : "";
 };
 const code = pick();
-if(!code){
-  const b0 = document.createElement("div");
-  b0.style.cssText = "position:fixed;left:8px;right:8px;top:8px;z-index:200;background:#7a1d1d;color:#fff;padding:8px 12px;border-radius:12px;font:600 12px system-ui,sans-serif;line-height:1.4;word-break:break-all";
-  let sp = ""; try{ sp = Telegram.WebApp.initDataUnsafe.start_param || ""; }catch(e){}
-  b0.textContent = "Kod topilmadi. URL: " + location.href.slice(0, 160) + " | start_param: " + (sp || "yo'q");
-  const add = () => { document.body.appendChild(b0); setTimeout(() => b0.remove(), 9000); };
-  if(document.body) add(); else document.addEventListener("DOMContentLoaded", add);
-  return;
-}
+if(!code) return;
 const bar = document.createElement("div");
 bar.style.cssText = "position:fixed;left:8px;right:8px;top:8px;z-index:200;background:#0f1a4d;color:#fff;padding:8px 12px;border-radius:12px;font:600 12.5px system-ui,sans-serif;line-height:1.4";
 document.body.appendChild(bar);
