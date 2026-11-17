@@ -15,7 +15,9 @@ const FIELDS = [
   {k: "min_topup", t: "Hisobni to'ldirish: eng kam summa (so'm)", mode: "numeric"},
   {k: "max_topup", t: "Hisobni to'ldirish: eng ko'p summa (so'm)", mode: "numeric"},
   {k: "min_withdraw", t: "Pul yechish: eng kam summa (so'm)", mode: "numeric"},
-  {k: "ref_bonus", t: "Referal bonusi (so'm)", mode: "numeric"}
+  {k: "ref_bonus", t: "Referal bonusi (so'm)", mode: "numeric"},
+  {k: "channel", t: "Kanal havolasi («Test tahlil» tugmasi uchun)", ph: "https://t.me/kanal_nomi", mode: "url", empty: true},
+  {k: "channel_chat", t: "Natija hisoboti yuboriladigan kanal (ixtiyoriy)", ph: "@kanal_nomi", mode: "text", empty: true}
 ];
 const gb = n => n >= 1073741824 ? (n / 1073741824).toFixed(2).replace(".", ",") + " GB" : (n / 1048576).toFixed(1).replace(".", ",") + " MB";
 async function setScreen(){
@@ -43,11 +45,11 @@ async function setScreen(){
         const inp = body.querySelector(`[data-f="${f.k}"]`);
         const v = inp.value.trim();
         if(v === cur[f.k]) continue;
-        if(v === "" ){ bad++; continue; }
+        if(v === "" && !f.empty){ bad++; continue; }
         try{ await call("/api/admin/set_setting", {key: f.k, value: v}); cur[f.k] = v; }catch(x){ bad++; inp.style.borderColor = "#b3262b"; }
       }
       btn.disabled = false;
-      toast(bad ? bad + " ta maydon noto'g'ri (faqat raqam yozing)" : "Saqlandi");
+      toast(bad ? bad + " ta maydon noto'g'ri. Raqamlar faqat raqam, kanal havolasi https://t.me/... bo'lsin" : "Saqlandi");
     }
   };
   try{
