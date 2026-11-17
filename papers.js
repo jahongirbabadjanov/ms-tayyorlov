@@ -110,7 +110,9 @@ function openSheet(p){
     const go = async () => {
       b.disabled = true;
       try{ await call("/api/papers/buy", {id: p.id}); await loadPapers(false); const np = PP.find(x => x.id === p.id); if(np) openSheet(np); else closeSheet(); }
-      catch(x){ b.disabled = false; const m = String(x.message); const t = m.includes("402") ? "Balans yetarli emas." : "Xatolik. Qayta urinib ko'ring."; if(tgw && tgw.showAlert) tgw.showAlert(t); }
+      catch(x){ b.disabled = false; const m = String(x.message); const t = m.includes("402") ? "Balans yetarli emas." : "Xatolik. Qayta urinib ko'ring.";
+        if(m.includes("402") && tgw && tgw.showPopup){ tgw.showPopup({message: t, buttons: [{id: "top", type: "default", text: "Balansni to'ldirish"}, {type: "close"}]}, id => { if(id === "top"){ closeSheet(); if(window.goTopup) window.goTopup(); } }); }
+        else if(tgw && tgw.showAlert) tgw.showAlert(t); }
     };
     const msg = p.title + " ni " + som(p.price) + " so'm evaziga sotib olasizmi?";
     if(tgw && tgw.showConfirm) tgw.showConfirm(msg, ok => { if(ok) go(); }); else go();
@@ -122,4 +124,4 @@ $("tlist").addEventListener("click", e => {
   const p = PP.find(x => x.id === +c.dataset.id); if(p) openSheet(p);
 });
 })();
-    
+      
