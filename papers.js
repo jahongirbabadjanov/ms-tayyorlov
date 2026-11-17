@@ -19,7 +19,8 @@ function drawPapers(){
   if(!list.length){ box.innerHTML = '<div class="empty"><div>📭</div><b>Hozircha tushgan savollar yo\'q</b>Tez orada savollar qo\'shiladi.</div>'; return; }
   box.innerHTML = list.map(p => {
     const ic = J ? J.jelly(J.keyOf(p.subject), 44, 24) : '<div class="ti">' + iconOf(p.subject) + '</div>';
-    const tag = p.owned ? '<span class="tag free">Sotib olingan</span>' : (p.price ? '<span class="tag paid">' + Number(p.price).toLocaleString("ru-RU") + '</span>' : '<span class="tag free">Bepul</span>');
+    const pr = Number(p.price || 0).toLocaleString("ru-RU") + " so'm";
+    const tag = !p.price ? '<span class="tag free">Bepul</span>' : (p.owned && !ADMIN ? '<span class="tag free">Sotib olingan</span>' : '<span class="tag paid">' + pr + '</span>');
     return '<div class="t cp pp" data-id="' + p.id + '"><div class="th">' + ic + '<div class="tm"><b>' + esc(p.title) + '</b><small>' + esc(p.subject) + ' · tushgan savol</small></div>' + tag + '</div></div>';
   }).join("");
 }
@@ -119,4 +120,3 @@ $("tlist").addEventListener("click", e => {
   const p = PP.find(x => x.id === +c.dataset.id); if(p) openSheet(p);
 });
 })();
-      
