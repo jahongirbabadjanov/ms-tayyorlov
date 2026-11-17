@@ -17,14 +17,24 @@ function open(){
   const draw = () => {
     body.innerHTML = `<input type="file" id="sf" accept="application/pdf" multiple style="display:none"><button id="spick" type="button" class="big2" style="margin-top:0;display:flex;align-items:center;justify-content:center;width:100%;height:54px;border:0;border-radius:16px;background:#2440d6;color:#fff;font:800 16px system-ui,sans-serif">＋ PDF fayllarni tanlash</button>`
     + (items.length ? `<div style="display:flex;gap:8px;margin-top:12px"><input id="sall" type="number" inputmode="numeric" placeholder="Hammasiga narx" style="${IN}flex:1"><button id="sapp" type="button" style="border:0;border-radius:12px;background:#e8edfb;color:#2440d6;font:800 14px system-ui,sans-serif;padding:0 14px">Qo'llash</button></div>` : "")
-    + items.map((x, i) => `<div class="pc" data-i="${i}"><div style="display:flex;gap:8px;align-items:center"><b style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(x.f.name)}</b><small style="color:${x.st === "ok" ? "#1a8a4a" : x.st === "err" ? "#b3262b" : "var(--muted)"};font-weight:700;white-space:nowrap">${x.st === "ok" ? "✅ Yuklandi" : x.st === "err" ? "❌ " + esc(x.msg) : x.st === "up" ? "⏳ Yuklanmoqda" : fsz(x.f.size)}</small></div>`
+    + items.map((x, i) => `<div class="pc" data-i="${i}"><div style="display:flex;gap:8px;align-items:center"><b style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc((x.f || x.a).name)}</b><small style="color:${x.st === "ok" ? "#1a8a4a" : x.st === "err" ? "#b3262b" : "var(--muted)"};font-weight:700;white-space:nowrap">${x.st === "ok" ? "✅ Yuklandi" : x.st === "err" ? "❌ " + esc(x.msg) : x.st === "up" ? "⏳ Yuklanmoqda" : (x.f ? fsz(x.f.size) : "") + (x.a ? " · 🔑 javob bor" : " · javob yo'q")}</small></div>`
       + (x.st === "ok" ? "" : `<input data-k="title" value="${esc(x.title)}" placeholder="Nomi" style="${IN}width:100%;margin-top:8px"><div style="display:flex;gap:8px;margin-top:8px"><select data-k="subject" style="${IN}flex:2">${SUBJECTS.map(s => `<option${s === x.subject ? " selected" : ""}>${esc(s)}</option>`).join("")}</select><input data-k="price" type="number" inputmode="numeric" value="${x.price}" placeholder="Narx" style="${IN}flex:1"></div>`) + "</div>").join("")
     + (items.some(x => x.st !== "ok") ? `<label style="display:block;margin:8px 2px 4px;font:700 13.5px system-ui,sans-serif;color:#6b7699">Nashr vaqti (bo'sh = hozir)</label><input id="swh" type="datetime-local" value="${esc(when)}" style="${IN}width:100%;margin-bottom:6px"><label style="display:flex;align-items:center;gap:10px;margin:6px 2px 10px;font:600 14.5px system-ui,sans-serif;color:#0f1a4d"><input id="snt" type="checkbox"${notify ? " checked" : ""} style="width:20px;height:20px">Yuklangach hammaga bitta xabar yuborish</label><button id="sgo" type="button" ${busy ? "disabled" : ""} style="display:flex;align-items:center;justify-content:center;width:100%;height:54px;margin-top:6px;border:0;border-radius:16px;background:#1fa463;color:#fff;font:800 16px system-ui,sans-serif;opacity:${busy ? .5 : 1}">${items.some(x => x.st === "err") ? "Xatolarni qayta yuborish" : "Hammasini yuklash (" + items.filter(x => x.st !== "ok").length + ")"}</button>` : "");
     const q = s => body.querySelector(s);
     q("#spick").onclick = () => q("#sf").click();
     q("#sf").onchange = e => {
       let big = 0;
-      [...e.target.files].forEach(f => { if(f.size > MAXB){ big++; return; } items.push({f, title: f.name.replace(/\.pdf$/i, "").replace(/[_]+/g, " "), subject: guess(f.name), price: 0, st: "", msg: ""}); });
+      const AW = /(javoblar|javob|yechimlar|yechim|kalit|answers|answer|key)/i, QW = /(savollar|savol|questions|question)/i;
+      const base = n => n.replace(/\.pdf$/i, "").replace(AW, " ").replace(QW, " ").replace(/[_\-]+(?=\D)/g, " ").replace(/_/g, " ").replace(/\s+/g, " ").trim();
+      [...e.target.files].forEach(f => {
+        if(f.size > MAXB){ big++; return; }
+        const isA = AW.test(f.name), b = base(f.name), key = b.toLowerCase();
+        let it = items.find(x => x.key === key && (isA ? !x.a : !x.f));
+        if(!it){ it = {f: null, a: null, key, title: b || f.name.replace(/\.pdf$/i, ""), subject: guess(f.name), price: 0, st: "", msg: ""}; items.push(it); }
+        if(isA) it.a = f; else it.f = f;
+      });
+      const nk = t => (t || "").toLowerCase().split(/(\d+)/).map(x => /^\d+$/.test(x) ? x.padStart(6, "0") : x).join("");
+      items.sort((p, q) => nk(p.title) < nk(q.title) ? -1 : 1);
       if(big) toast(big + " ta fayl 15 MB dan katta, o'tkazib yuborildi");
       draw();
     };
@@ -41,11 +51,13 @@ function open(){
     busy = true;
     for(const x of items){
       if(x.st === "ok") continue;
+      if(!x.f){ x.st = "err"; x.msg = "Savol fayli yo'q"; continue; }
       if(!x.title.trim()){ x.st = "err"; x.msg = "Nomi yo'q"; continue; }
       x.st = "up"; draw();
       try{
         const data = await rd(x.f);
-        await call("/api/papers/create", {subject: x.subject, title: x.title.trim(), price: x.price, test_code: "", data, publish_at: iso});
+        const adata = x.a ? await rd(x.a) : "";
+        await call("/api/papers/create", {subject: x.subject, title: x.title.trim(), price: x.price, test_code: "", data, adata, publish_at: iso});
         x.st = "ok";
       }catch(e){ x.st = "err"; x.msg = "Qayta urinib ko'ring"; }
     }
@@ -77,4 +89,4 @@ window.ADMIN_SECTIONS.past = function(){
   }, 150);
 };
 })();
-  
+      
