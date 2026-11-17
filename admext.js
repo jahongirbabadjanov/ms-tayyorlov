@@ -21,35 +21,20 @@ function addSwitch(ov, cur, open){
   ah.after(s);
 }
 const origMsg = window.ADMIN_SECTIONS.msg, origRes = window.ADMIN_SECTIONS.res;
+window.__PK = false;
+const _call = call;
+call = (p, b) => _call(window.__PK && p === "/api/admin/bc_meta" ? "/api/admin/bc_meta_p" : p, b);
 function openMsg(m){
-  if(m === "past") return pastMsg();
-  origMsg(); const ov = [...document.querySelectorAll(".adm2")].pop(); addSwitch(ov, "mock", openMsg);
+  window.__PK = (m === "past");
+  origMsg(); const ov = [...document.querySelectorAll(".adm2")].pop(); addSwitch(ov, m === "past" ? "past" : "mock", openMsg);
 }
 function openRes(m){
+  window.__PK = false;
   if(m === "past") return pastRes();
   origRes(); const ov = [...document.querySelectorAll(".adm2")].pop(); addSwitch(ov, "mock", openRes);
 }
 async function papers(){ return (await call("/api/admin/pm_list", {})).papers; }
 const defText = t => "📚 {ism}, yangi tushgan savol qo'shildi: " + t + ". Hozir ko'ring va tayyorlaning!";
-async function pastMsg(){
-  const ov = shell("Xabar yuborish", "Tushgan savol bo'yicha"); addSwitch(ov, "past", openMsg);
-  const body = ov.querySelector(".body"); body.innerHTML = '<p class="sub">Yuklanmoqda...</p>';
-  let list; try{ list = await papers(); }catch(e){ body.innerHTML = '<p class="sub">Yuklab bo\'lmadi.</p>'; return; }
-  if(!list.length){ body.innerHTML = '<div class="empty"><div>📭</div><b>Tushgan savol yo\'q</b></div>'; return; }
-  let who = "notbought", cur = list[0], T;
-  body.innerHTML = `<div class="pmf"><label>Tushgan savol</label><select id="ps">${list.map(p => `<option value="${p.id}">${esc(p.title)} · ${esc(p.subject)}</option>`).join("")}</select><label>Kimga</label><div class="pch" id="pw"><button data-w="notbought" class="on" type="button">Olmaganlarga</button><button data-w="all" type="button">Hammaga</button><button data-w="bought" type="button">Olganlarga</button></div><label>Xabar matni · {ism} ismini qo'yadi</label><textarea id="pt" maxlength="1000"></textarea><label>Rasm (ixtiyoriy)</label><input type="file" id="pimg" accept="image/*"><div id="pprev" style="margin-top:8px"></div><label>Tugma matni</label><input type="text" id="pbn" maxlength="40" value="📚 Tushgan savollarni ochish"><label>Tugma havolasi (bo'sh qolsa ilova ochiladi)</label><input type="text" id="pln" placeholder="https://..."><div class="cnt" id="pc">Hisoblanmoqda...</div><button class="pbt s" id="pself" type="button">Avval o'zimga yuborish</button><button class="pbt" id="psend" type="button">Yuborish</button></div>`;
-  const q = s => body.querySelector(s), txt = q("#pt");
-  txt.value = defText(cur.title);
-  let PH = "";
-  const pl = mode => ({id: cur.id, who, mode, text: txt.value, photo: PH, button: q("#pbn").value, link: q("#pln").value});
-  q("#pimg").onchange = e => { const f = e.target.files[0]; PH = ""; q("#pprev").innerHTML = ""; if(!f) return; const im = new Image(); im.onload = () => { const k = Math.min(1, 1280 / Math.max(im.width, im.height)); const c = document.createElement("canvas"); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); PH = c.toDataURL("image/jpeg", 0.85); q("#pprev").innerHTML = '<img src="' + PH + '" style="max-width:100%;max-height:200px;border-radius:12px">'; }; im.src = URL.createObjectURL(f); };
-  const count = async () => { try{ const r = await call("/api/admin/pm_send", {id: cur.id, who, mode: "count"}); q("#pc").textContent = "Xabar boradi: " + som(r.count) + " ta foydalanuvchiga"; }catch(e){ q("#pc").textContent = "Sanab bo'lmadi"; } };
-  q("#ps").onchange = e => { const old = defText(cur.title); cur = list.find(p => p.id === +e.target.value); if(txt.value === old) txt.value = defText(cur.title); count(); };
-  q("#pw").onclick = e => { const b = e.target.closest("[data-w]"); if(!b) return; who = b.dataset.w; q("#pw").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); clearTimeout(T); T = setTimeout(count, 200); };
-  q("#pself").onclick = async () => { try{ await call("/api/admin/pm_send", pl("self")); toast("O'zingizga yuborildi"); }catch(e){ toast("Yuborib bo'lmadi"); } };
-  q("#psend").onclick = () => ask("Xabar hamma tanlanganlarga yuborilsinmi?", async () => { const b = q("#psend"); b.disabled = true; try{ const r = await call("/api/admin/pm_send", pl("send")); toast(som(r.count) + " ta odamga yuborilmoqda"); }catch(e){ toast("Yuborib bo'lmadi"); } b.disabled = false; });
-  count();
-}
 async function pastRes(){
   const ov = shell("Natija e'loni", "Tushgan savollarni yuborish"); addSwitch(ov, "past", openRes);
   const body = ov.querySelector(".body"); body.innerHTML = '<p class="sub">Yuklanmoqda...</p>';
@@ -61,7 +46,7 @@ async function pastRes(){
     ask(c.dataset.t + " haqida hamma foydalanuvchiga xabar yuborilsinmi?", async () => { b.disabled = true; try{ const r = await call("/api/admin/pm_send", {id: +c.dataset.id, who: "all", mode: "send", text: defText(c.dataset.t)}); toast(som(r.count) + " ta odamga yuborilmoqda"); }catch(x){ toast("Yuborib bo'lmadi"); } b.disabled = false; });
   };
 }
+Object.keys(window.ADMIN_SECTIONS).forEach(k => { if(k === "msg" || k === "res") return; const f = window.ADMIN_SECTIONS[k]; window.ADMIN_SECTIONS[k] = function(){ window.__PK = false; return f.apply(this, arguments); }; });
 window.ADMIN_SECTIONS.msg = () => openMsg("mock");
 window.ADMIN_SECTIONS.res = () => openRes("mock");
 })();
-    
