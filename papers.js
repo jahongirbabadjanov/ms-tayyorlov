@@ -13,14 +13,21 @@ document.head.insertAdjacentHTML("beforeend", "<style>"
 let PP = [], ADMIN = false;
 const tgw = window.Telegram && Telegram.WebApp;
 
+function paperChips(){
+  const cnt = {}; PP.forEach(p => cnt[p.subject] = (cnt[p.subject] || 0) + 1);
+  const mk = (name, val, n) => '<button class="chip' + (FILTER === val ? " on" : "") + '" data-s="' + esc(val) + '">' + esc(name) + (n ? '<em>' + n + '</em>' : "") + '</button>';
+  $("chips").innerHTML = mk("Barchasi", "", PP.length) + SUBJECTS.map(n => mk(n, n, cnt[n])).join("");
+}
+const _rc = window.renderChips;
+window.renderChips = function(){ if(CAT === "past") paperChips(); else _rc(); };
 function drawPapers(){
+  paperChips();
   const box = $("tlist"), J = window.MSJ;
   const list = PP.filter(p => !FILTER || p.subject === FILTER);
   if(!list.length){ box.innerHTML = '<div class="empty"><div>📭</div><b>Hozircha tushgan savollar yo\'q</b>Tez orada savollar qo\'shiladi.</div>'; return; }
   box.innerHTML = list.map(p => {
     const ic = J ? J.jelly(J.keyOf(p.subject), 44, 24) : '<div class="ti">' + iconOf(p.subject) + '</div>';
-    const pr = Number(p.price || 0).toLocaleString("ru-RU") + " so'm";
-    const tag = !p.price ? '<span class="tag free">Bepul</span>' : (p.owned && !ADMIN ? '<span class="tag free">Sotib olingan</span>' : '<span class="tag paid">' + pr + '</span>');
+    const tag = !p.price ? '<span class="tag free">Bepul</span>' : (p.bought ? '<span class="tag free">Sotib olingan</span>' : '<span class="tag paid">' + Number(p.price).toLocaleString("ru-RU") + ' so\'m</span>');
     return '<div class="t cp pp" data-id="' + p.id + '"><div class="th">' + ic + '<div class="tm"><b>' + esc(p.title) + '</b><small>' + esc(p.subject) + ' · tushgan savol</small></div>' + tag + '</div></div>';
   }).join("");
 }
@@ -76,21 +83,20 @@ function openSheet(p){
   closeSheet();
   const J = window.MSJ, bal = (typeof ME !== "undefined" && ME && ME.balance) || 0;
   const ic = J ? J.jelly(J.keyOf(p.subject), 52, 28) : "";
-  const pdfSvg = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l5 5v13H6Z"/><path d="M14 3v5h5"/><text x="12.5" y="17.3" font-size="5.2" font-weight="800" text-anchor="middle" fill="currentColor" stroke="none">PDF</text></svg>';
   const kv = (a, b) => '<div class="kv"><span>' + a + '</span><span>' + b + '</span></div>';
   let h = '<div class="shh">' + ic + '<div><h2>' + esc(p.title) + '</h2><p>' + esc(p.subject) + ' · tushgan savol</p></div></div><div style="height:6px"></div>';
-  h += kv("Narxi", p.price ? som(p.price) : "Bepul");
-  if(!p.owned && p.price) h += kv("Balansingiz", som(bal));
-  if(p.test_code) h += kv("Test bilan ishlash", '<span style="color:#1f9d55">Mumkin (kod ' + esc(p.test_code) + ')</span>');
-  if(p.owned){
-    h += '<button class="sb p" data-a="open" type="button">' + pdfSvg + ' Savollar PDF</button>';
-    if(p.test_code) h += '<button class="sb y" data-a="test" type="button">Test bilan ishlash</button>';
+  h += kv("Narxi", p.price ? som(p.price) + " so'm" : "Bepul");
+  if(!p.owned) h += kv("Balansingiz", som(bal) + " so'm");
+  if(!p.owned){
+    h += '<button class="sb y" data-a="buy" type="button">Sotib olish (' + som(p.price) + ' so\'m)</button>';
+  }else if(p.test_code){
+    h += '<button class="sb p" data-a="test" type="button">Testni boshlash</button>';
+    if(p.answer_url) h += '<button class="sb s" data-a="ans" type="button">Javoblar PDF</button>';
   }else{
-    h += '<p class="sub" style="margin:12px 0 0">Sotib olgach savollar PDF' + (p.test_code ? " va testni ishlash" : "") + ' ochiladi.</p>';
-    h += '<button class="sb p" data-a="buy" type="button">' + (p.price ? "Sotib olish (" + som(p.price) + ")" : "Olish (bepul)") + '</button>';
+    h += '<button class="sb p" data-a="open" type="button">Savollar PDF</button>';
+    if(p.answer_url) h += '<button class="sb s" data-a="ans" type="button">Javoblar PDF</button>';
   }
-  if(ADMIN) h += '<button class="sb r" data-a="del" type="button">O\'chirish</button>';
-  h += '<button class="sb s" data-a="x" type="button">Yopish</button>';
+  h += '<button class="sb s" data-a="x" type="button" style="background:transparent">Yopish</button>';
   const d = document.createElement("div");
   d.className = "shd"; d.id = "shd"; d.innerHTML = '<div class="shs">' + h + '</div>';
   d.addEventListener("click", async e => {
@@ -99,19 +105,15 @@ function openSheet(p){
     const a = b.dataset.a;
     if(a === "x"){ closeSheet(); return; }
     if(a === "open"){ if(p.url) openUrl(p.url); return; }
+    if(a === "ans"){ if(p.answer_url) openUrl(p.answer_url); return; }
     if(a === "test"){ closeSheet(); $("codein").value = p.test_code; $("codego").click(); return; }
-    if(a === "del"){
-      const go = async () => { try{ await call("/api/papers/delete", {id: p.id}); closeSheet(); loadPapers(false); }catch(x){} };
-      if(tgw && tgw.showConfirm) tgw.showConfirm("O'chirilsinmi?", ok => { if(ok) go(); }); else go();
-      return;
-    }
     const go = async () => {
       b.disabled = true;
-      try{ const r = await call("/api/papers/buy", {id: p.id}); await loadPapers(false); const np = PP.find(x => x.id === p.id); if(np) openSheet(np); else closeSheet(); if(r.url) openUrl(r.url); }
+      try{ await call("/api/papers/buy", {id: p.id}); await loadPapers(false); const np = PP.find(x => x.id === p.id); if(np) openSheet(np); else closeSheet(); }
       catch(x){ b.disabled = false; const m = String(x.message); const t = m.includes("402") ? "Balans yetarli emas." : "Xatolik. Qayta urinib ko'ring."; if(tgw && tgw.showAlert) tgw.showAlert(t); }
     };
-    const msg = p.title + " savollarini " + som(p.price) + " evaziga sotib olasizmi?";
-    if(!p.price) go(); else if(tgw && tgw.showConfirm) tgw.showConfirm(msg, ok => { if(ok) go(); }); else go();
+    const msg = p.title + " ni " + som(p.price) + " so'm evaziga sotib olasizmi?";
+    if(tgw && tgw.showConfirm) tgw.showConfirm(msg, ok => { if(ok) go(); }); else go();
   });
   document.body.appendChild(d);
 }
@@ -120,3 +122,4 @@ $("tlist").addEventListener("click", e => {
   const p = PP.find(x => x.id === +c.dataset.id); if(p) openSheet(p);
 });
 })();
+    
