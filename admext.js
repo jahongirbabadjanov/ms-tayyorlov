@@ -23,7 +23,7 @@ function addSwitch(ov, cur, open){
 const origMsg = window.ADMIN_SECTIONS.msg, origRes = window.ADMIN_SECTIONS.res;
 window.__PK = false;
 const _call = call;
-call = (p, b) => _call(window.__PK && p === "/api/admin/bc_meta" ? "/api/admin/bc_meta_p" : p, b);
+call = (p, b) => _call(window.__PK && (p === "/api/admin/bc_meta" || p === "/api/admin/bc_do") ? p + (p.endsWith("meta") ? "_p" : "_p") : p, b);
 function openMsg(m){
   window.__PK = (m === "past");
   origMsg(); const ov = [...document.querySelectorAll(".adm2")].pop(); addSwitch(ov, m === "past" ? "past" : "mock", openMsg);
