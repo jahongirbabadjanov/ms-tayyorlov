@@ -4,13 +4,14 @@ const LS = {
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 };
 document.head.insertAdjacentHTML("beforeend", "<style>"
-+ "#nav button i{position:relative!important;width:42px!important;height:42px!important;border-radius:13px!important;display:grid!important;place-items:center!important;overflow:hidden!important;background:linear-gradient(160deg,#e4e6ec 0%,#b3b7c3 55%,#8a8e9c 100%)!important;box-shadow:0 5px 10px rgba(0,0,0,.2),inset 0 -3px 6px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.9)!important;transition:transform .15s}"
++ "#nav button i{position:relative!important;width:34px!important;height:34px!important;border-radius:11px!important;display:grid!important;place-items:center!important;overflow:hidden!important;background:linear-gradient(160deg,#e4e6ec 0%,#b3b7c3 55%,#8a8e9c 100%)!important;box-shadow:0 5px 10px rgba(0,0,0,.2),inset 0 -3px 6px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.9)!important;transition:transform .15s}"
 + "#nav button i::before{content:'';position:absolute;left:2px;right:2px;top:2px;height:48%;border-radius:11px 11px 20px 20px/11px 11px 9px 9px;background:linear-gradient(rgba(255,255,255,.85),rgba(255,255,255,.12))}"
 + "#nav button i::after{content:'';position:absolute;top:-30%;left:-60%;width:40%;height:160%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);transform:rotate(20deg);animation:nxs 3.2s ease-in-out infinite}"
 + "@keyframes nxs{0%,55%{left:-60%}100%{left:130%}}"
-+ "#nav button i svg{position:relative;z-index:2;width:22px!important;height:22px!important;stroke:#fff!important;color:#fff!important;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}"
++ "#nav button i svg{position:relative;z-index:2;width:18px!important;height:18px!important;stroke:#fff!important;color:#fff!important;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}"
 + "#nav button.on i{background:linear-gradient(160deg,#8fa5ff 0%,#3d5af1 50%,#1b2fa8 100%)!important;box-shadow:0 7px 14px rgba(36,64,214,.5),inset 0 -3px 6px rgba(0,0,40,.3),inset 0 1px 0 rgba(255,255,255,.7)!important}"
 + "#nav button:active i{transform:scale(.9)}"
++ "#nav button{position:relative!important;font-size:11.5px!important;padding-top:6px!important;padding-bottom:6px!important;gap:3px!important}"
 + "nav button{position:relative}.nxn{position:absolute;top:2px;right:6px;background:#ff5a3c;color:#fff;font-size:9px;font-weight:900;border-radius:99px;padding:2px 6px;z-index:3}"
 + ".nxk{padding:14px 14px 90px}.nxk h2{font-size:22px;margin:4px 0 2px}.nxk .sub{color:#7a84a8;font-size:13px;margin-bottom:14px}"
 + ".nxc{background:#fff;border:1px solid #e3e8f8;border-radius:22px;padding:18px 14px;margin-bottom:12px;box-shadow:0 3px 10px rgba(36,64,214,.06)}"
@@ -69,7 +70,7 @@ function build(){
   const first = nav.querySelector('button[data-v="create"]');
   const k = document.createElement("button");
   k.dataset.v = "kod";
-  k.innerHTML = '<i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3"/></svg></i>Kod' + (LS.get("nx_seen") ? "" : '<span class="nxn">yangi</span>');
+  k.innerHTML = '<i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3"/></svg></i>Kod' + (LS.get("nx_seen") ? "" : '<span class="nxn"></span>');
   nav.insertBefore(k, first);
   k.onclick = () => go("kod");
   boxes(); recent();
