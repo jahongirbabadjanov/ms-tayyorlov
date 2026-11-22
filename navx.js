@@ -4,13 +4,13 @@ const LS = {
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 };
 document.head.insertAdjacentHTML("beforeend", "<style>"
-+ "nav button i{position:relative;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;overflow:hidden;background:linear-gradient(160deg,#e4e6ec 0%,#b3b7c3 55%,#8a8e9c 100%);box-shadow:0 5px 10px rgba(0,0,0,.2),inset 0 -3px 6px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.9);transition:transform .15s}"
-+ "nav button i::before{content:'';position:absolute;left:2px;right:2px;top:2px;height:48%;border-radius:11px 11px 20px 20px/11px 11px 9px 9px;background:linear-gradient(rgba(255,255,255,.85),rgba(255,255,255,.12))}"
-+ "nav button i::after{content:'';position:absolute;top:-30%;left:-60%;width:40%;height:160%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);transform:rotate(20deg);animation:nxs 3.2s ease-in-out infinite}"
++ "#nav button i{position:relative!important;width:42px!important;height:42px!important;border-radius:13px!important;display:grid!important;place-items:center!important;overflow:hidden!important;background:linear-gradient(160deg,#e4e6ec 0%,#b3b7c3 55%,#8a8e9c 100%)!important;box-shadow:0 5px 10px rgba(0,0,0,.2),inset 0 -3px 6px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.9)!important;transition:transform .15s}"
++ "#nav button i::before{content:'';position:absolute;left:2px;right:2px;top:2px;height:48%;border-radius:11px 11px 20px 20px/11px 11px 9px 9px;background:linear-gradient(rgba(255,255,255,.85),rgba(255,255,255,.12))}"
++ "#nav button i::after{content:'';position:absolute;top:-30%;left:-60%;width:40%;height:160%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);transform:rotate(20deg);animation:nxs 3.2s ease-in-out infinite}"
 + "@keyframes nxs{0%,55%{left:-60%}100%{left:130%}}"
-+ "nav button i svg{position:relative;z-index:2;width:22px;height:22px;stroke:#fff!important;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}"
-+ "nav button.on i{background:linear-gradient(160deg,#8fa5ff 0%,#3d5af1 50%,#1b2fa8 100%);box-shadow:0 7px 14px rgba(36,64,214,.5),inset 0 -3px 6px rgba(0,0,40,.3),inset 0 1px 0 rgba(255,255,255,.7)}"
-+ "nav button:active i{transform:scale(.9)}"
++ "#nav button i svg{position:relative;z-index:2;width:22px!important;height:22px!important;stroke:#fff!important;color:#fff!important;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}"
++ "#nav button.on i{background:linear-gradient(160deg,#8fa5ff 0%,#3d5af1 50%,#1b2fa8 100%)!important;box-shadow:0 7px 14px rgba(36,64,214,.5),inset 0 -3px 6px rgba(0,0,40,.3),inset 0 1px 0 rgba(255,255,255,.7)!important}"
++ "#nav button:active i{transform:scale(.9)}"
 + "nav button{position:relative}.nxn{position:absolute;top:2px;right:6px;background:#ff5a3c;color:#fff;font-size:9px;font-weight:900;border-radius:99px;padding:2px 6px;z-index:3}"
 + ".nxk{padding:14px 14px 90px}.nxk h2{font-size:22px;margin:4px 0 2px}.nxk .sub{color:#7a84a8;font-size:13px;margin-bottom:14px}"
 + ".nxc{background:#fff;border:1px solid #e3e8f8;border-radius:22px;padding:18px 14px;margin-bottom:12px;box-shadow:0 3px 10px rgba(36,64,214,.06)}"
@@ -91,4 +91,3 @@ window.go = function(v){
 go = window.go;
 const t = setInterval(() => { build(); if(document.getElementById("v-kod")) clearInterval(t); }, 500);
 })();
-  
