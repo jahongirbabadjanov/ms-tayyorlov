@@ -71,12 +71,12 @@ function hide(blur){
 }
 document.addEventListener("focusin", e => {
   const t = e.target;
-  if(t && t.matches && t.matches("#xopen input") && t.getAttribute("inputmode") !== "text") show(t);
+  if(t && t.matches && t.matches("#xopen input, .okey input") && t.getAttribute("inputmode") !== "text") show(t);
 });
 document.addEventListener("pointerdown", e => {
   if(!kb) return;
-  if(kb.contains(e.target) || (e.target.matches && e.target.matches("#xopen input"))) return;
+  if(kb.contains(e.target) || (e.target.matches && e.target.matches("#xopen input, .okey input"))) return;
   hide();
 }, true);
 })();
-                 
+    
