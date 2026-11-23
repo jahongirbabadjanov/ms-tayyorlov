@@ -1,30 +1,22 @@
 (function(){
-let codes = new Set(), got = 0;
+let codes = new Set(), got = 0, busy = false;
 function apply(){
-  const l = document.getElementById("tlist"); if(!l) return;
-  l.querySelectorAll(".t.cp[data-code]").forEach(c => {
-    if(c.classList.contains("pp")) return;
-    const h = codes.has(c.dataset.code);
+  document.querySelectorAll(".t[data-code]").forEach(c => {
+    if(c.classList.contains("pp") || c.closest(".adm2") || c.closest(".tpg")) return;
+    const h = codes.has(String(c.dataset.code));
     if(h && c.style.display !== "none") c.style.display = "none";
     else if(!h && c.style.display === "none") c.style.display = "";
   });
 }
 async function load(){
-  if(!window.call) return;
+  if(busy || typeof call !== "function") return;
+  busy = true;
   try{
     const r = await call("/api/papers/list", {});
-    codes = new Set((r.papers || []).map(p => p.test_code).filter(Boolean));
-    got = Date.now(); apply();
+    codes = new Set((r.papers || []).map(p => p.test_code).filter(Boolean).map(String));
+    got = Date.now();
   }catch(e){}
+  busy = false; apply();
 }
-const l = () => document.getElementById("tlist");
-let n = 0;
-const iv = setInterval(() => {
-  const el = l();
-  if(el){
-    clearInterval(iv); load();
-    new MutationObserver(apply).observe(el, {childList: true});
-    setInterval(() => { if(Date.now() - got > 45000) load(); }, 15000);
-  } else if(++n > 60) clearInterval(iv);
-}, 300);
+setInterval(() => { if(!got || Date.now() - got > 30000) load(); apply(); }, 700);
 })();
