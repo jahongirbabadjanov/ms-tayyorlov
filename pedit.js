@@ -72,7 +72,7 @@ async function edit(id){
 function mark(){
   document.querySelectorAll(".adm2").forEach(a => {
     const h = a.querySelector(".ah b"); if(!h || h.textContent !== "Tushgan savollar") return;
-    a.querySelectorAll('.pc[data-id] [data-a="price"]').forEach(x => { x.textContent = "✏️ Tahrirlash"; });
+    a.querySelectorAll('.pc[data-id] [data-a="price"]').forEach(x => { if(x.textContent !== "✏️ Tahrirlash") x.textContent = "✏️ Tahrirlash"; });
     const nw = a.querySelector("#pnew");
     if(nw && !a.querySelector("#pbulk")){
       const d = document.createElement("button"); d.id = "pbulk"; d.type = "button"; d.className = "pbk";
