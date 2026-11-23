@@ -31,7 +31,15 @@ function topup(){
   let n = 0;
   const t = setInterval(() => { const b = document.querySelector(".pf-pill"); if(b){ clearInterval(t); b.click(); } else if(++n > 20) clearInterval(t); }, 250);
 }
-function startTest(code){ close(); document.getElementById("codein").value = code; document.getElementById("codego").click(); }
+function startTest(code){
+  close(); document.getElementById("codein").value = code; document.getElementById("codego").click();
+  let n = 0;
+  const t = setInterval(() => {
+    const b = document.getElementById("xstart");
+    if(b){ clearInterval(t); if(!b.disabled && /^Testni boshlash/.test(b.textContent)) b.click(); }
+    else if(++n > 40) clearInterval(t);
+  }, 150);
+}
 function state(t){
   const now = Date.now(), st = t && t.starts_at ? new Date(t.starts_at).getTime() : 0, en = t && t.ends_at ? new Date(t.ends_at).getTime() : 0;
   if(st && st > now) return {k: "wait", ms: st - now};
@@ -140,4 +148,4 @@ if(l) l.addEventListener("click", e => {
   else if(c.dataset.code) openMock(c.dataset.code);
 }, true);
 })();
-        
+    
