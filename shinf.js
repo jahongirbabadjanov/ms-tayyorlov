@@ -47,11 +47,11 @@ function cells(ms){
 }
 function render(p, t){
   const J = window.MSJ, bal = (typeof ME !== "undefined" && ME && ME.balance) || 0;
-  const S = t ? state(t) : null;
+  const S = t ? state(t) : null, pu = p.url || (t && t.pdf_url) || null, kind = p.kind || "tushgan savol";
   const ic = J ? J.jelly(J.keyOf(p.subject), 52, 28) : "";
   const chip = !S ? (p.owned ? "📄 Savollar to'plami" : "🔒 Yopiq") : S.k === "wait" ? "🟡 Hali boshlanmagan" : S.k === "end" ? "🏁 Test yakunlangan" : "🟢 Test ochiq";
   let h = '<div class="tph"><button type="button" id="tpx">‹</button><b>Test haqida</b></div>'
-    + '<div class="thr"><div class="t1">' + ic + '<div><h2>' + esc(p.title) + '</h2><span>' + esc(p.subject) + ' · tushgan savol</span></div></div><div class="tch">' + chip + '</div>';
+    + '<div class="thr"><div class="t1">' + ic + '<div><h2>' + esc(p.title) + '</h2><span>' + esc(p.subject) + ' · ' + kind + '</span></div></div><div class="tch">' + chip + '</div>';
   if(S && S.k !== "end") h += '<div class="tlb">' + (S.k === "wait" ? "Boshlanishiga qoldi" : (t.ends_at ? "Tugashiga qoldi" : "Test ochiq")) + '</div>' + (S.k === "wait" || t.ends_at ? '<div class="tcl" id="tcl">' + cells(S.ms) + '</div>' : "");
   if(S && S.k === "end") h += '<div class="tlb">' + (t.ends_at ? fdt(t.ends_at) + " da tugagan" : "") + '</div>';
   h += '</div>';
@@ -59,6 +59,7 @@ function render(p, t){
   if(t){
     g.unshift(["Vaqt", (t.minutes || "-") + " daqiqa"]); g.unshift(["Savollar soni", (t.questions || "-") + " ta"]);
     if(t.rash) g.push(["Rash ball", "Hisoblanadi ✓"]);
+    if(t.n != null) g.push(["Ishtirokchilar", t.n + " kishi"]);
     if(t.starts_at) g.push(["Boshlanishi", fdt(t.starts_at)]);
     if(t.ends_at) g.push(["Tugashi", fdt(t.ends_at)]);
   }
@@ -73,9 +74,9 @@ function render(p, t){
   }else{
     if(p.test_code){
       if(S.k === "wait") h += '<button class="tbt d" disabled id="tgo" type="button">Test hali boshlanmagan</button>';
-      else h += '<button class="tbt p" data-a="test" id="tgo" type="button">' + (S.k === "end" ? "📊 Natijani ko'rish" : "▶ Testni boshlash") + '</button>';
+      else h += '<button class="tbt p" data-a="test" id="tgo" type="button">' + (S.k === "end" ? "📊 Natijani ko'rish" : "▶ Testni boshlash" + (!p.kind || !p.price ? "" : " — " + money(p.price))) + '</button>';
     }
-    if(p.url) h += '<button class="tbt s" data-a="q" type="button">📄 Savollar PDF</button>';
+    if(pu) h += '<button class="tbt s" data-a="q" type="button">📄 Savollar PDF</button>';
     if(p.answer_url) h += '<button class="tbt s" data-a="ans" type="button">✅ Javoblar PDF</button>';
     else if(p.has_answer) h += '<button class="tbt d" disabled type="button">🔒 Javoblar PDF (test tugagach)</button>';
   }
@@ -86,7 +87,7 @@ function render(p, t){
     const a = b.dataset.a;
     if(a === "tp") topup();
     else if(a === "test") startTest(p.test_code);
-    else if(a === "q") openUrl(p.url);
+    else if(a === "q") openUrl(pu);
     else if(a === "ans") openUrl(p.answer_url);
     else if(a === "buy"){
       const go1 = async () => {
@@ -107,6 +108,16 @@ function render(p, t){
     }, 1000);
   }
 }
+async function openMock(code){
+  close();
+  ov = document.createElement("div"); ov.className = "tpg";
+  ov.innerHTML = '<p style="text-align:center;color:#7a84a8;margin-top:40px">Yuklanmoqda...</p>';
+  document.body.appendChild(ov);
+  try{
+    const t = await call("/api/papers/info", {code});
+    render({title: t.title, subject: t.subject || "", price: t.price || 0, owned: true, test_code: code, kind: "MS test · kod " + code}, t);
+  }catch(e){ close(); if(tgw && tgw.showAlert) tgw.showAlert("Yuklab bo'lmadi. Qayta urinib ko'ring."); }
+}
 async function open(id){
   close();
   ov = document.createElement("div"); ov.className = "tpg";
@@ -123,9 +134,10 @@ async function open(id){
 function esc(s){ const d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
 const l = document.getElementById("tlist");
 if(l) l.addEventListener("click", e => {
-  const c = e.target.closest(".pp"); if(!c) return;
+  const c = e.target.closest(".t.cp"); if(!c) return;
   e.stopImmediatePropagation(); e.stopPropagation();
-  open(+c.dataset.id);
+  if(c.classList.contains("pp")) open(+c.dataset.id);
+  else if(c.dataset.code) openMock(c.dataset.code);
 }, true);
 })();
-  
+        
