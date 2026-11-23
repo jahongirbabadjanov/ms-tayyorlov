@@ -44,6 +44,7 @@ function draw(){
     + '<div class="mkc"><button type="button" data-c="l">⬅</button><button type="button" data-c="r">➡</button>' + (tab === "abc" ? '<button type="button" data-c="up">⇧</button>' : "") + '<button type="button" data-c="d">⌫</button><button type="button" data-c="sys">⌨</button><button type="button" class="ok" data-c="ok">Tayyor</button></div>';
 }
 function show(i){
+  if(inp && inp !== i) inp.removeAttribute("inputmode");
   inp = i; i.setAttribute("inputmode", "none");
   if(!kb){
     kb = document.createElement("div"); kb.className = "mkb";
@@ -65,17 +66,28 @@ function show(i){
   setTimeout(() => { try{ i.scrollIntoView({block: "center", behavior: "smooth"}); }catch(e){} }, 120);
 }
 function hide(blur){
+  if(inp) inp.removeAttribute("inputmode");
   if(kb){ kb.remove(); kb = null; }
   document.body.style.paddingBottom = "";
   if(blur && inp) inp.blur();
 }
-document.addEventListener("focusin", e => {
-  const t = e.target;
-  if(t && t.matches && t.matches("#xopen input, .okey input, #v-create input[placeholder*='javob']") && t.getAttribute("inputmode") !== "text") show(t);
-});
+const SEL = "#xopen input, .okey input, #v-create input[placeholder*='javob']";
+document.head.insertAdjacentHTML("beforeend", "<style>.mkq{flex:none;width:44px;height:44px;margin-left:6px;border:0;border-radius:13px;background:#e8edfb;color:#2440d6;font-size:21px;line-height:1;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;padding:0}.mkq.on{background:#2440d6;color:#fff}</style>");
+function addIcons(){
+  document.querySelectorAll(SEL).forEach(i => {
+    if(i.dataset.mq) return;
+    i.dataset.mq = "1";
+    const b = document.createElement("button"); b.type = "button"; b.className = "mkq"; b.textContent = "⌨"; b.setAttribute("aria-label", "Matematik klaviatura");
+    b.addEventListener("pointerdown", e => e.preventDefault());
+    b.addEventListener("click", () => { if(kb && inp === i){ hide(); i.focus(); } else { show(i); i.focus({preventScroll: true}); } });
+    i.after(b);
+  });
+}
+new MutationObserver(addIcons).observe(document.body, {childList: true, subtree: true});
+addIcons();
 document.addEventListener("pointerdown", e => {
   if(!kb) return;
-  if(kb.contains(e.target) || (e.target.matches && e.target.matches("#xopen input, .okey input, #v-create input[placeholder*='javob']"))) return;
+  if(kb.contains(e.target) || (e.target.closest && e.target.closest(".mkq"))) return;
   hide();
 }, true);
 })();
