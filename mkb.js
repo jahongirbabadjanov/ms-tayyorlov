@@ -71,11 +71,11 @@ function hide(blur){
 }
 document.addEventListener("focusin", e => {
   const t = e.target;
-  if(t && t.matches && t.matches("#xopen input, .okey input, #v-create input[placeholder^='To\'g\'ri']") && t.getAttribute("inputmode") !== "text") show(t);
+  if(t && t.matches && t.matches("#xopen input, .okey input, #v-create input[placeholder*='javob']") && t.getAttribute("inputmode") !== "text") show(t);
 });
 document.addEventListener("pointerdown", e => {
   if(!kb) return;
-  if(kb.contains(e.target) || (e.target.matches && e.target.matches("#xopen input, .okey input, #v-create input[placeholder^='To\'g\'ri']"))) return;
+  if(kb.contains(e.target) || (e.target.matches && e.target.matches("#xopen input, .okey input, #v-create input[placeholder*='javob']"))) return;
   hide();
 }, true);
 })();
