@@ -443,7 +443,7 @@ function renderResult(t, R, keyPdf){
   const S2 = 'width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
   const tile = (id, p, a, b) => `<button class="rtile" id="${id}" type="button"><span class="rti"><svg ${S2}>${p}</svg></span><b>${a}</b><small>${b}</small></button>`;
   let card = `<div class="rcd"><div class="rtop"><div class="rbadge">${badge}</div><div class="rmid">`;
-  if(R.pending) card += `<div class="rball"><b>${R.raw}/${R.total}</b></div><div class="rsub">${R.rash_off ? "To'g'ri javoblar" : "Ball hisoblanmoqda"}</div>
+  if(R.pending) card += `<div class="rball"><b>${R.raw}/${R.total}</b></div><div class="rsub">${R.rash_off ? "To'g'ri javoblar" : "Ball hisoblanmoqda"}</div>`;
   else card += `<div class="rball"><b>${cm(shown)}</b><span>/ 75 ball</span></div><div class="rsub">${esc(t.subject)}</div>`;
   card += `</div></div>`;
   if(!R.pending) card += `<div class="rbar"><i style="width:${Math.min(100, shown / 75 * 100)}%"></i></div>`;
