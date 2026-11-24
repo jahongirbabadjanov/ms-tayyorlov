@@ -29,7 +29,14 @@ async function open(id, title){
     + '<label>Boshlanishi (ixtiyoriy)</label><input id="ks" type="datetime-local" value="' + loc(k.starts_at) + '"><label>Tugashi (ixtiyoriy)</label><input id="ke" type="datetime-local" value="' + loc(k.ends_at) + '"></div>'
     + '<div class="sw"><div class="tx"><b>Rash ball hisoblansin</b><small>Yoqilsa, 30 ta ishtirokchidan keyin ball Rasch usulida qayta hisoblanadi. O\'chiq bo\'lsa oddiy ball.</small></div><button class="tg' + (k.rash ? " on" : "") + '" id="kr" type="button"></button></div>'
     + '<button class="sbtn" id="ksv" type="button">Saqlash</button>'
-    + (k.code ? '<p class="sub" style="text-align:center">Test kodi: <b>' + esc(k.code) + "</b></p>" : "");
+    + (k.code ? '<p class="sub" style="text-align:center">Test kodi: <b>' + esc(k.code) + "</b></p>" + '<button class="sbtn" id="kdl" type="button" style="background:#fde4e5;color:#b3262b;box-shadow:none">🗑 Javoblarni olib tashlash</button>' : "");
+  const kdl = b.querySelector("#kdl");
+  if(kdl) kdl.onclick = () => {
+    const go = async () => { try{ await call("/api/papers/key_clear", {id}); toast("Javoblar olib tashlandi"); b.closest(".adm2").remove(); }catch(e){ toast("Bajarilmadi"); } };
+    const m = "Test " + k.code + " va uning natijalari o'chiriladi, savol faqat PDF bo'lib qoladi. Davom etasizmi?";
+    const tgw = window.Telegram && Telegram.WebApp;
+    if(tgw && tgw.showConfirm) tgw.showConfirm(m, ok => { if(ok) go(); }); else if(confirm(m)) go();
+  };
   const ko = b.querySelector("#ko");
   const drawO = () => {
     ko.innerHTML = P.map((a, i) => '<div class="pkq"><div class="pkh"><span>' + (36 + i) + '-savol</span><button type="button" class="pp1" data-q="' + i + '" data-d="1">＋</button><button type="button" class="pp2" data-q="' + i + '" data-d="-1">－</button></div>'
@@ -83,4 +90,3 @@ document.addEventListener("click", e => {
 }, true);
 new MutationObserver(mark).observe(document.body, {childList: true, subtree: true});
 })();
-    
