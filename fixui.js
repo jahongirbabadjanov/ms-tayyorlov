@@ -11,5 +11,6 @@ document.head.insertAdjacentHTML("beforeend", "<style id=\"fixui\">"
 + ".wl-calc span:first-child{color:#6b7699!important;font-weight:700!important;font-size:14.5px!important;padding:0 2px}"
 + ".wl-calc span:last-child{background:#dff5e8!important;color:#12713d!important;font-weight:900!important;font-size:18px!important;border-radius:14px;padding:13px 14px!important}"
 + ".wl-file{color:#4a5788!important;font-weight:700}"
++ "#nav{background:#fff!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;z-index:60!important;isolation:isolate}"
 + "</style>");
 })();
